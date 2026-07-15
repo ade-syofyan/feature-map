@@ -10,6 +10,17 @@ Plugin Claude Code untuk memetakan **flow bisnis lintas layer/service** — coup
 - **`/flow-map-init`** — generate draft FEATURE-MAP.yaml untuk project baru.
 - **Skill `feature-map`** — aturan perawatan registry.
 
+## v0.2.0 — Stale flow detection
+
+- Hook menandai flow `stale` di `.feature-map/state.json` (gitignored) begitu
+  touchpoint-nya diedit, atau berubah lewat git (merge/pull/checkout —
+  terdeteksi via `git diff <last_synced_sha>..HEAD`).
+- `/feature-map:flow-sync-install` memasang git pre-commit hook: peringatan
+  (non-blocking) kalau flow berubah di satu layer tapi layer lain tidak ikut.
+- `/feature-map:flow-audit` kini incremental: default hanya mengaudit flow
+  stale; `--all` untuk audit penuh. Setelah audit, flow ditandai clean dan
+  `last_synced_sha` dimajukan ke HEAD.
+
 ## Install
 
 ```bash
