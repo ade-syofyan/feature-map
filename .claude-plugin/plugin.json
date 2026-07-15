@@ -1,6 +1,6 @@
 {
   "name": "feature-map",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Business-flow dependency mapping: FEATURE-MAP.yaml registry per project, PostToolUse reminder hook, /flow-audit and /flow-map-init commands",
   "author": {
     "name": "Ade Syofyan",
