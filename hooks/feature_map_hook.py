@@ -9,7 +9,11 @@ FEATURE-MAP.yaml yang terdokumentasi (lihat skill feature-map).
 import fnmatch
 import json
 import os
+import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fm_state
 
 
 def parse_feature_map(text):
@@ -115,17 +119,49 @@ def match(rel_path, pattern):
     return False
 
 
-def main():
+def match_flows(flows, rel_paths):
+    """Petakan nama flow -> daftar rel_path yang cocok dengan touchpoint-nya."""
+    hits = {}
+    for name, flow in flows.items():
+        for rel in rel_paths:
+            if any("path" in tp and match(rel, tp["path"])
+                   for tp in flow["touchpoints"]):
+                hits.setdefault(name, []).append(rel)
+    return hits
+
+
+def git_changed_files(root, last_sha):
+    """Path relatif yang berubah sejak last_sha (commit) + working tree saat ini."""
+    changed = set()
     try:
-        payload = json.load(sys.stdin)
+        if last_sha:
+            r = subprocess.run(["git", "diff", "--name-only", f"{last_sha}..HEAD"],
+                               cwd=root, capture_output=True, text=True, timeout=10)
+            changed.update(l for l in r.stdout.splitlines() if l.strip())
+        r = subprocess.run(["git", "status", "--porcelain"],
+                           cwd=root, capture_output=True, text=True, timeout=10)
+        for line in r.stdout.splitlines():
+            if len(line) > 3:
+                changed.add(line[3:].split(" -> ")[-1].strip())
     except Exception:
-        return
+        pass
+    return sorted(changed)
 
-    file_path = (payload.get("tool_input") or {}).get("file_path")
-    if not file_path:
-        return
 
-    project_dir = os.environ.get("CLAUDE_PROJECT_DIR") or payload.get("cwd") or os.getcwd()
+def git_head(root):
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root,
+                           capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() or None
+    except Exception:
+        return None
+
+
+def handle(payload):
+    tool_input = payload.get("tool_input") or {}
+    file_path = tool_input.get("file_path")
+
+    project_dir = payload.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     fm_path = find_feature_map(project_dir)
     if not fm_path:
         return
@@ -137,7 +173,29 @@ def main():
     except Exception:
         return
 
-    rel = os.path.relpath(os.path.abspath(file_path), root)
+    if file_path:
+        rel_paths = [os.path.relpath(os.path.abspath(file_path), root)]
+    else:
+        # Event Bash: deteksi perubahan via git (merge/pull/checkout dsb.)
+        state = fm_state.load_state(root)
+        if state["last_synced_sha"] is None:
+            head = git_head(root)
+            if head:
+                state["last_synced_sha"] = head
+                fm_state.save_state(root, state)
+            return
+        rel_paths = git_changed_files(root, state["last_synced_sha"])
+        if not rel_paths:
+            return
+
+    stale_hits = match_flows(flows, rel_paths)
+    if stale_hits:
+        fm_state.mark_stale(root, stale_hits)
+
+    if not file_path:
+        return  # reminder detail hanya untuk edit langsung
+
+    rel = rel_paths[0]
     hits = []
     for name, flow in flows.items():
         for tp in flow["touchpoints"]:
@@ -171,6 +229,17 @@ def main():
             "additionalContext": "\n".join(lines),
         }
     }))
+
+
+def main():
+    try:
+        payload = json.load(sys.stdin)
+    except Exception:
+        return
+    try:
+        handle(payload)
+    except Exception:
+        return
 
 
 if __name__ == "__main__":
