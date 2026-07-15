@@ -1,15 +1,35 @@
 ---
 description: Audit konsistensi satu flow bisnis lintas layer berdasarkan FEATURE-MAP.yaml
-argument-hint: "[nama-flow]"
+argument-hint: "[nama-flow | --all]"
 ---
 
 Kamu menjalankan audit konsistensi flow bisnis berdasarkan registry `FEATURE-MAP.yaml` di root project.
 
 Argumen: `$ARGUMENTS`
 
-## Kalau tanpa argumen
+## Mode incremental (default, tanpa argumen)
 
-Baca `FEATURE-MAP.yaml`, tampilkan daftar semua flow (nama, deskripsi singkat, jumlah touchpoint), lalu tanya user flow mana yang mau diaudit.
+1. Baca `.feature-map/state.json` di root repo (sebelah FEATURE-MAP.yaml).
+2. Jika argumen `--all` diberikan ATAU state.json tidak ada → tampilkan daftar
+   semua flow (nama, deskripsi singkat, jumlah touchpoint), tanya user flow
+   mana yang mau diaudit (atau semuanya), lalu jalankan langkah audit di
+   bawah dan lanjut ke "Setelah audit".
+3. Jika state ada dan tidak ada flow berstatus `stale` → laporkan
+   "[feature-map] Tidak ada flow stale — semua flow clean sejak
+   <last_synced_sha>." dan BERHENTI.
+4. Jika ada flow stale → audit HANYA flow tersebut (langkah audit di bawah).
+   Gunakan `dirty_files` di state sebagai titik awal pemeriksaan.
+
+## Setelah audit
+
+Setelah temuan dilaporkan (atau tidak ada temuan):
+
+1. Ambil SHA HEAD: `git rev-parse HEAD`.
+2. Update `.feature-map/state.json`: set setiap flow yang barusan diaudit
+   menjadi `{"status": "clean", "dirty_files": [], "marked_at": "<UTC ISO>Z"}`
+   dan set `last_synced_sha` ke SHA HEAD. Tulis JSON dengan indent 2.
+3. Jika ada temuan GAP yang BELUM diperbaiki user, tanyakan dulu sebelum
+   menandai clean — flow dengan gap yang dibiarkan tetap stale.
 
 ## Kalau ada nama flow
 
