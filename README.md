@@ -21,6 +21,19 @@ Plugin Claude Code untuk memetakan **flow bisnis lintas layer/service** — coup
   stale; `--all` untuk audit penuh. Setelah audit, flow ditandai clean dan
   `last_synced_sha` dimajukan ke HEAD.
 
+## v0.3.0 — Multi-repo flow
+
+- Touchpoint bisa menunjuk repo lain: field `repo: <nama>` di
+  FEATURE-MAP.yaml. Definisi ter-commit; resolusi nama → path lokal lewat
+  registry per mesin `~/.claude/feature-maps/registry.json`.
+- `/feature-map:flow-repo-register` — daftarkan repo aktif (juga `--list`,
+  `--remove`).
+- Reminder hook menyebut path lokal touchpoint di repo lain; perubahan juga
+  menandai stale flow yang sama di state.json repo tujuan
+  (`dirty_files` berformat `<repo-asal>:<path>`).
+- `/flow-audit` membaca file touchpoint lintas repo; repo tak terdaftar
+  dilaporkan UNRESOLVED.
+
 ## Install
 
 ```bash
