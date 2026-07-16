@@ -74,3 +74,14 @@ def test_bash_event_initializes_sha_without_stale(tmp_path):
     state = fm_state.load_state(root)
     assert state["last_synced_sha"] is not None
     assert state["flows"] == {}
+
+
+def test_git_changed_files_rejects_malicious_sha(tmp_path):
+    root = make_repo(tmp_path)
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    # SHA berbahaya tidak boleh diteruskan sebagai argumen git
+    changed = hook.git_changed_files(root, "--upload-pack=/bin/evil")
+    assert isinstance(changed, list)
+    assert hook.is_valid_sha("abc123")
+    assert not hook.is_valid_sha("--upload-pack=/bin/evil")
+    assert not hook.is_valid_sha("a" * 41)

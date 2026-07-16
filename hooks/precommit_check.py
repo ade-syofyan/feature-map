@@ -63,7 +63,7 @@ def main():
             return
         last_sha = fm_state.load_state(root)["last_synced_sha"]
         changed = _git_lines(root, "diff", "--name-only", f"{last_sha}..HEAD") \
-            if last_sha else []
+            if last_sha and hook.is_valid_sha(last_sha) else []
         for w in check(flows, staged, changed):
             print(w)
     except Exception:
