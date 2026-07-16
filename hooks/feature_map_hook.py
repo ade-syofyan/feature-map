@@ -13,6 +13,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fm_registry
 import fm_state
 
 
@@ -120,14 +121,31 @@ def match(rel_path, pattern):
 
 
 def match_flows(flows, rel_paths):
-    """Petakan nama flow -> daftar rel_path yang cocok dengan touchpoint-nya."""
+    """Petakan nama flow -> daftar rel_path yang cocok dengan touchpoint LOKAL
+    (touchpoint ber-`repo:` milik repo lain, tidak dicocokkan di sini)."""
     hits = {}
     for name, flow in flows.items():
         for rel in rel_paths:
-            if any("path" in tp and match(rel, tp["path"])
+            if any("path" in tp and "repo" not in tp and match(rel, tp["path"])
                    for tp in flow["touchpoints"]):
                 hits.setdefault(name, []).append(rel)
     return hits
+
+
+def propagate_stale(root, flows, stale_hits):
+    """Tandai stale flow yang sama di state.json repo lain (via registry)."""
+    src = fm_registry.default_repo_name(root)
+    for name, files in stale_hits.items():
+        seen = set()
+        for tp in flows[name]["touchpoints"]:
+            rname = tp.get("repo")
+            if not rname or rname in seen:
+                continue
+            seen.add(rname)
+            other = fm_registry.resolve(rname)
+            if not other or os.path.abspath(other) == os.path.abspath(root):
+                continue
+            fm_state.mark_stale(other, {name: [f"{src}:{f}" for f in files]})
 
 
 def is_valid_sha(sha):
@@ -197,6 +215,7 @@ def handle(payload):
     stale_hits = match_flows(flows, rel_paths)
     if stale_hits:
         fm_state.mark_stale(root, stale_hits)
+        propagate_stale(root, flows, stale_hits)
 
     if not file_path:
         return  # reminder detail hanya untuk edit langsung
@@ -205,7 +224,7 @@ def handle(payload):
     hits = []
     for name, flow in flows.items():
         for tp in flow["touchpoints"]:
-            if "path" in tp and match(rel, tp["path"]):
+            if "path" in tp and "repo" not in tp and match(rel, tp["path"]):
                 hits.append((name, flow, tp))
                 break
     if not hits:
@@ -222,7 +241,16 @@ def handle(payload):
             lines.append("  Touchpoint lain yang mungkin harus ikut disesuaikan:")
             for tp in others:
                 note = f" — {tp['note']}" if tp.get("note") else ""
-                lines.append(f"    - {tp.get('path', '?')} ({tp.get('role', '?')}){note}")
+                loc = ""
+                rname = tp.get("repo")
+                if rname:
+                    local = fm_registry.resolve(rname)
+                    if local:
+                        loc = f" @ {rname} → {local}"
+                    else:
+                        loc = (f" @ {rname} (belum terdaftar — jalankan "
+                               f"/feature-map:flow-repo-register di repo itu)")
+                lines.append(f"    - {tp.get('path', '?')} ({tp.get('role', '?')}){loc}{note}")
         for inv in flow["invariants"]:
             lines.append(f"  Invariant: {inv}")
         lines.append("  Periksa apakah perubahan ini menuntut penyesuaian di touchpoint lain; "
