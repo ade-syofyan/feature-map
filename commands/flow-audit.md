@@ -23,6 +23,24 @@ Argumen: `$ARGUMENTS`
    perubahan di repo lain — mulai pemeriksaan dari file itu di repo sana
    (resolve via registry).
 
+## Blast radius call-graph (opsional)
+
+Kalau `.code-review-graph/graph.db` ada di root repo, saat mengaudit flow
+stale:
+
+1. Kumpulkan `dirty_files` flow itu, buang entri berformat `via:<flow>`
+   (itu penanda dampak deklaratif, bukan file).
+2. Jalankan: `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_graph.py <root>
+   <dirty_files...>` → JSON `{file: [{caller, file, line}, ...]}`.
+3. Jadikan tiap pemanggil daftar periksa konkret di laporan, contoh:
+   "fungsi `hr.approval.approve` di `hr/approval/svc.py:120` memanggil kode
+   yang berubah — pastikan masih konsisten."
+4. Kalau `file` pemanggil cocok dengan touchpoint flow lain yang TIDAK stale
+   dan TIDAK ada di rantai `impacts` flow yang diaudit, laporkan dengan
+   kategori **IMPACT**: dampak terdeteksi dari call-graph tapi belum
+   dideklarasikan — sarankan menambahkan flow itu ke `impacts`.
+5. Tanpa graph.db, lewati seksi ini tanpa komentar.
+
 ## Setelah audit
 
 Setelah temuan dilaporkan (atau tidak ada temuan):
@@ -53,5 +71,7 @@ Setelah temuan dilaporkan (atau tidak ada temuan):
 4. Laporkan hasil sebagai daftar temuan, urut dari paling kritis:
    - **GAP** — inkonsistensi nyata yang bisa bikin bug/stuck user (sebutkan file:line kedua sisi)
    - **DRIFT** — belum bug, tapi registry/dokumentasi sudah tidak akurat
+   - **IMPACT** — dampak lintas flow terdeteksi dari call-graph yang belum
+     dideklarasikan di `impacts` (sebutkan fungsi pemanggil file:line)
    - **OK** — invariant yang terverifikasi konsisten
 5. Jangan langsung memperbaiki — audit ini deliverable-nya laporan. Tawarkan perbaikan setelah user melihat temuan.
