@@ -130,9 +130,15 @@ def match_flows(flows, rel_paths):
     return hits
 
 
+def is_valid_sha(sha):
+    return bool(sha) and len(sha) <= 40 and all(c in "0123456789abcdef" for c in sha.lower())
+
+
 def git_changed_files(root, last_sha):
     """Path relatif yang berubah sejak last_sha (commit) + working tree saat ini."""
     changed = set()
+    if last_sha is not None and not is_valid_sha(last_sha):
+        last_sha = None  # state korup/dimanipulasi — jangan sisipkan ke argumen git
     try:
         if last_sha:
             r = subprocess.run(["git", "diff", "--name-only", f"{last_sha}..HEAD"],
