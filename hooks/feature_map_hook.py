@@ -139,6 +139,31 @@ def match_flows(flows, rel_paths):
     return hits
 
 
+def expand_impacts(flows, stale_hits, max_depth=5):
+    """Kembangkan stale_hits dengan rantai `impacts` (BFS, batas kedalaman,
+    aman siklus). Return (expanded_hits, chains)."""
+    expanded = {k: list(v) for k, v in stale_hits.items()}
+    chains = {}
+    for origin in stale_hits:
+        visited = set(stale_hits)
+        queue = [(origin, 0)]
+        chain = []
+        while queue:
+            cur, depth = queue.pop(0)
+            if depth >= max_depth:
+                continue
+            for nxt in flows.get(cur, {}).get("impacts", []):
+                if nxt in visited or nxt not in flows:
+                    continue
+                visited.add(nxt)
+                chain.append(nxt)
+                expanded.setdefault(nxt, []).append(f"via:{cur}")
+                queue.append((nxt, depth + 1))
+        if chain:
+            chains[origin] = chain
+    return expanded, chains
+
+
 def propagate_stale(root, flows, stale_hits):
     """Tandai stale flow yang sama di state.json repo lain (via registry)."""
     src = fm_registry.default_repo_name(root)
@@ -152,7 +177,8 @@ def propagate_stale(root, flows, stale_hits):
             other = fm_registry.resolve(rname)
             if not other or os.path.abspath(other) == os.path.abspath(root):
                 continue
-            fm_state.mark_stale(other, {name: [f"{src}:{f}" for f in files]})
+            fm_state.mark_stale(other, {
+                name: [f if f.startswith("via:") else f"{src}:{f}" for f in files]})
 
 
 def is_valid_sha(sha):
@@ -220,9 +246,11 @@ def handle(payload):
             return
 
     stale_hits = match_flows(flows, rel_paths)
+    chains = {}
     if stale_hits:
-        fm_state.mark_stale(root, stale_hits)
-        propagate_stale(root, flows, stale_hits)
+        expanded, chains = expand_impacts(flows, stale_hits)
+        fm_state.mark_stale(root, expanded)
+        propagate_stale(root, flows, expanded)
 
     if not file_path:
         return  # reminder detail hanya untuk edit langsung
@@ -264,12 +292,16 @@ def handle(payload):
                      "kalau ya, kerjakan atau laporkan gap-nya ke user. Kalau policy berubah, "
                      "update FEATURE-MAP.yaml.")
 
+    for origin, chain in chains.items():
+        lines.append(f"[feature-map] Perubahan flow '{origin}' berdampak ke: "
+                     f"{' → '.join(chain)} — flow tersebut ikut ditandai stale.")
+
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PostToolUse",
             "additionalContext": "\n".join(lines),
         }
-    }))
+    }, ensure_ascii=False))
 
 
 def main():
