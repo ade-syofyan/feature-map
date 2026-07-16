@@ -34,6 +34,17 @@ Plugin Claude Code untuk memetakan **flow bisnis lintas layer/service** — coup
 - `/flow-audit` membaca file touchpoint lintas repo; repo tak terdaftar
   dilaporkan UNRESOLVED.
 
+## v0.4.0 — Impact chain & call-graph
+
+- Field `impacts: [flow-lain]` per flow: perubahan flow menandai stale
+  seluruh rantai dampaknya (BFS transitif, maks kedalaman 5, aman siklus,
+  ikut lintas repo). `dirty_files` turunan berformat `via:<flow-asal>`.
+- Reminder hook menampilkan rantai dampak
+  (`lembur berdampak ke: approval → pembayaran`).
+- Integrasi code-review-graph: kalau `.code-review-graph/graph.db` ada,
+  `/flow-audit` menampilkan fungsi pemanggil kode yang berubah (blast
+  radius) dan temuan **IMPACT** untuk dampak yang belum dideklarasikan.
+
 ## Install
 
 ```bash
