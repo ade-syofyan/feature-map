@@ -55,7 +55,8 @@ def parse_feature_map(text):
         if indent == 2 and stripped.endswith(":"):
             current_flow = stripped[:-1].strip()
             flows[current_flow] = {"description": "", "policy": "",
-                                   "touchpoints": [], "invariants": []}
+                                   "touchpoints": [], "invariants": [],
+                                   "impacts": []}
             current_list = None
             continue
         if current_flow is None:
@@ -63,9 +64,15 @@ def parse_feature_map(text):
 
         flow = flows[current_flow]
         if indent == 4:
-            if stripped.startswith(("touchpoints:", "invariants:")):
-                current_list = stripped.split(":", 1)[0]
+            if stripped.startswith(("touchpoints:", "invariants:", "impacts:")):
+                key, _, val = stripped.partition(":")
+                current_list = key.strip()
                 current_item = None
+                val = val.strip()
+                if current_list == "impacts" and val.startswith("[") and val.endswith("]"):
+                    flow["impacts"] = [unquote(x) for x in val[1:-1].split(",")
+                                       if x.strip()]
+                    current_list = None
             elif ":" in stripped:
                 key, val = stripped.split(":", 1)
                 if key.strip() in ("description", "policy"):
@@ -75,8 +82,8 @@ def parse_feature_map(text):
 
         if current_list and stripped.startswith("- "):
             body = stripped[2:].strip()
-            if current_list == "invariants":
-                flow["invariants"].append(unquote(body))
+            if current_list in ("invariants", "impacts"):
+                flow[current_list].append(unquote(body))
             else:
                 current_item = {}
                 flow["touchpoints"].append(current_item)
