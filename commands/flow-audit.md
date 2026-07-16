@@ -19,6 +19,9 @@ Argumen: `$ARGUMENTS`
    <last_synced_sha>." dan BERHENTI.
 4. Jika ada flow stale → audit HANYA flow tersebut (langkah audit di bawah).
    Gunakan `dirty_files` di state sebagai titik awal pemeriksaan.
+   Entri `dirty_files` berformat `<nama-repo>:<path>` berarti pemicunya
+   perubahan di repo lain — mulai pemeriksaan dari file itu di repo sana
+   (resolve via registry).
 
 ## Setelah audit
 
@@ -35,6 +38,13 @@ Setelah temuan dilaporkan (atau tidak ada temuan):
 
 1. Baca entry flow tersebut dari `FEATURE-MAP.yaml`: policy, touchpoints, invariants.
 2. Baca **semua file touchpoint** (resolve glob-nya dulu). Kalau ada glob yang tidak match file apa pun, laporkan sebagai touchpoint mati (file dipindah/dihapus — registry perlu diupdate).
+   Touchpoint dengan field `repo: <nama>` berada di repo lain: resolve
+   path-nya lewat `~/.claude/feature-maps/registry.json` (kunci
+   `repos.<nama>`), lalu baca file-nya dari `<path-repo>/<glob>`. Kalau nama
+   tidak terdaftar atau path-nya sudah tidak ada, laporkan touchpoint itu
+   sebagai **UNRESOLVED** (bukan GAP) dengan saran menjalankan
+   `/feature-map:flow-repo-register` di repo tersebut, dan lanjutkan audit
+   touchpoint lain.
 3. Bandingkan implementasi antar touchpoint terhadap policy dan tiap invariant. Fokus pada:
    - Validasi field: field yang wajib/opsional harus konsisten antara client form, backend validation, dan tampilan admin/verifikasi.
    - Enum/status: nilai status yang dikenal tiap sisi harus sama.
