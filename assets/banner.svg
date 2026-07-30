@@ -1,0 +1,57 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="feature-map: business-flow memory for AI coding agents">
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#dce8fb" stroke-width="1" opacity="0.08"/>
+    </pattern>
+    <pattern id="grid-major" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M 120 0 L 0 0 0 120" fill="none" stroke="#dce8fb" stroke-width="1" opacity="0.14"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="300" fill="#0f2851"/>
+  <rect width="1200" height="300" fill="url(#grid)"/>
+  <rect width="1200" height="300" fill="url(#grid-major)"/>
+
+  <!-- corner registration marks, blueprint sheet convention -->
+  <g stroke="#7fa8de" stroke-width="1.5" opacity="0.6">
+    <path d="M 18 34 L 18 18 L 34 18"/>
+    <path d="M 1166 18 L 1182 18 L 1182 34"/>
+    <path d="M 1182 266 L 1182 282 L 1166 282"/>
+    <path d="M 34 282 L 18 282 L 18 266"/>
+  </g>
+
+  <!-- routed flow line, dimension-line style with tick marks: client -> backend -> admin -> docs -->
+  <g stroke="#8fb8ec" stroke-width="1.5" fill="none" opacity="0.85">
+    <path d="M 96 224 L 96 150 L 176 150 L 176 100 L 256 100 L 256 66"/>
+  </g>
+  <g stroke="#8fb8ec" stroke-width="1.5" opacity="0.85">
+    <line x1="86" y1="150" x2="106" y2="150"/>
+    <line x1="166" y1="100" x2="186" y2="100"/>
+  </g>
+
+  <!-- touchpoint pins, amber annotation ink -->
+  <circle cx="96" cy="224" r="6" fill="none" stroke="#ffb454" stroke-width="2.5"/>
+  <circle cx="96" cy="150" r="5" fill="#ffb454"/>
+  <circle cx="176" cy="100" r="5" fill="#ffb454"/>
+  <circle cx="256" cy="66" r="6" fill="none" stroke="#ffb454" stroke-width="2.5"/>
+
+  <!-- layer labels along the route, drafting caption style -->
+  <text x="108" y="228" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="11" letter-spacing="1.5" fill="#8fb8ec">CLIENT</text>
+  <text x="188" y="104" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="11" letter-spacing="1.5" fill="#8fb8ec">BACKEND</text>
+  <text x="268" y="62" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="11" letter-spacing="1.5" fill="#8fb8ec">ADMIN</text>
+
+  <!-- vertical divider, blueprint sheet border -->
+  <line x1="470" y1="40" x2="470" y2="260" stroke="#26417a" stroke-width="1"/>
+
+  <!-- wordmark -->
+  <text x="520" y="152" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="58" font-weight="700" fill="#f3f8ff">feature-map</text>
+
+  <!-- tagline -->
+  <text x="522" y="192" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="21" fill="#c3d7f4">Business-flow memory for AI coding agents</text>
+
+  <!-- sub tagline / keywords, drafting title-block style -->
+  <text x="522" y="222" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#7a9cd1">Claude Code plugin &#183; Codex skill &#183; FEATURE-MAP.yaml &#183; cross-layer drift detection</text>
+
+  <!-- title block, bottom right, blueprint convention -->
+  <text x="1182" y="270" text-anchor="end" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="11" letter-spacing="1" fill="#4d6ba3">SHEET 1/1 &#8212; ONE REGISTRY, ONE SOURCE OF TRUTH</text>
+</svg>

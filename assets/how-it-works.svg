@@ -1,0 +1,54 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="feature-map lifecycle: SessionStart index, PostToolUse reminder, flow-audit">
+  <defs>
+    <pattern id="hw-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#dce8fb" stroke-width="1" opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="360" fill="#0f2851"/>
+  <rect width="1200" height="360" fill="url(#hw-grid)"/>
+
+  <!-- routing line between the three sheets -->
+  <g stroke="#8fb8ec" stroke-width="1.5" opacity="0.7">
+    <line x1="374" y1="200" x2="426" y2="200"/>
+    <line x1="774" y1="200" x2="826" y2="200"/>
+  </g>
+  <g fill="#ffb454">
+    <polygon points="426,200 412,193 412,207"/>
+    <polygon points="826,200 812,193 812,207"/>
+  </g>
+
+  <!-- Sheet 1: SessionStart -->
+  <g>
+    <rect x="40" y="100" width="330" height="200" fill="none" stroke="#3a5c96" stroke-width="1.5"/>
+    <line x1="40" y1="140" x2="370" y2="140" stroke="#26417a" stroke-width="1"/>
+    <text x="64" y="126" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" letter-spacing="2" fill="#ffb454">01 &#8212; SESSION START</text>
+    <text x="64" y="174" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#f3f8ff">Flow index loads</text>
+    <text x="64" y="206" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">30 flow names plus a</text>
+    <text x="64" y="228" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">one-line description each</text>
+    <text x="64" y="270" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#7a9cd1">~500 tokens, not 700 lines</text>
+  </g>
+
+  <!-- Sheet 2: PostToolUse -->
+  <g>
+    <rect x="440" y="100" width="330" height="200" fill="none" stroke="#3a5c96" stroke-width="1.5"/>
+    <line x1="440" y1="140" x2="770" y2="140" stroke="#26417a" stroke-width="1"/>
+    <text x="464" y="126" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" letter-spacing="2" fill="#ffb454">02 &#8212; POST-EDIT</text>
+    <text x="464" y="174" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#f3f8ff">Touchpoint reminder</text>
+    <text x="464" y="206" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">Edited file matches a flow &#8594;</text>
+    <text x="464" y="228" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">agent sees siblings + invariants</text>
+    <text x="464" y="270" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#7a9cd1">full detail, only when relevant</text>
+  </g>
+
+  <!-- Sheet 3: flow-audit -->
+  <g>
+    <rect x="840" y="100" width="330" height="200" fill="none" stroke="#3a5c96" stroke-width="1.5"/>
+    <line x1="840" y1="140" x2="1170" y2="140" stroke="#26417a" stroke-width="1"/>
+    <text x="864" y="126" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" letter-spacing="2" fill="#ffb454">03 &#8212; /FLOW-AUDIT</text>
+    <text x="864" y="174" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#f3f8ff">Drift is verified</text>
+    <text x="864" y="206" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">GAP &#183; DRIFT &#183; IMPACT &#183; OK</text>
+    <text x="864" y="228" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#a9c2e8">before the task is called done</text>
+    <text x="864" y="270" font-family="Menlo, Consolas, 'Courier New', monospace" font-size="12" fill="#7a9cd1">pre-commit hook backs this up</text>
+  </g>
+
+  <text x="600" y="336" text-anchor="middle" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#7a9cd1">One FEATURE-MAP.yaml registry drives all three steps, for Claude Code and Codex alike.</text>
+</svg>

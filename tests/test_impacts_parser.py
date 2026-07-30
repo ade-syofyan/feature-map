@@ -35,3 +35,21 @@ def test_impacts_absent_defaults_empty():
     flows = hook.parse_feature_map(
         "flows:\n  checkout:\n    description: \"x\"\n")
     assert flows["checkout"]["impacts"] == []
+
+
+def test_blueprint_metadata_fields_are_parsed():
+    flows = hook.parse_feature_map(
+        "flows:\n"
+        "  absensi:\n"
+        "    description: \"absensi\"\n"
+        "    confidence: draft\n"
+        "    evidence:\n"
+        "      - source: \"blueprint.pdf\"\n"
+        "        page: 80\n"
+        "        section: \"WORKFLOW ABSENSI\"\n")
+    assert flows["absensi"]["confidence"] == "draft"
+    assert flows["absensi"]["evidence"] == [{
+        "source": "blueprint.pdf",
+        "page": "80",
+        "section": "WORKFLOW ABSENSI",
+    }]

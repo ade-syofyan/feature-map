@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "feature-map",
+  "description": "Business-flow memory for AI coding agents: FEATURE-MAP.yaml registry, Claude Code plugin, and Codex skill.",
+  "owner": {
+    "name": "Ade Syofyan",
+    "email": "ade.syofyan@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "feature-map",
+      "description": "Business-flow dependency mapping for Claude Code and Codex: FEATURE-MAP.yaml registry, blueprint importer, reminders, stale audits, impact chains",
+      "author": {
+        "name": "Ade Syofyan",
+        "email": "ade.syofyan@gmail.com"
+      },
+      "source": "./",
+      "homepage": "https://github.com/ade-syofyan/feature-map"
+    }
+  ]
+}
