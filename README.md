@@ -11,7 +11,7 @@
 keep client, backend, admin, docs, and migration touchpoints of the same flow in sync —
 with proactive session context, post-edit reminders, and a `GAP`/`DRIFT`/`IMPACT`/`OK` audit.
 
-[![Version](https://img.shields.io/badge/version-0.10.0-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.10.1-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Registry](https://img.shields.io/badge/registry-FEATURE--MAP.yaml-ffb454?style=flat-square)](#quick-example)
@@ -213,6 +213,11 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.10.1 - License & CI
+
+- Adds an MIT `LICENSE` file.
+- Adds a GitHub Actions workflow (`.github/workflows/test.yml`) that runs the pytest suite (73 tests) on push/PR to `master`.
 
 #### v0.10.0 - Blocking Drift Gate & Flow History Log
 
@@ -528,6 +533,11 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.10.1 - Lisensi & CI
+
+- Menambahkan file `LICENSE` (MIT).
+- Menambahkan workflow GitHub Actions (`.github/workflows/test.yml`) yang menjalankan test suite pytest (73 test) tiap push/PR ke `master`.
 
 #### v0.10.0 - Blocking Drift Gate & Riwayat Historis Flow
 
