@@ -19,5 +19,9 @@ Pasang pre-commit hook feature-map di repo saat ini. Langkah:
      "sudah terpasang" dan berhenti. Kalau belum, append baris di atas di
      akhir file (jangan menimpa isi lain, mis. hook code-review-graph).
 5. Verifikasi: jalankan `python3 <path> < /dev/null` — harus exit 0 tanpa
-   error, lalu laporkan ke user bahwa hook terpasang dan sifatnya hanya
-   memperingatkan, tidak memblokir commit.
+   error, lalu laporkan ke user bahwa hook terpasang dengan sifat:
+   - Warning cross-role touchpoint (heuristik path) — tidak memblokir commit.
+   - Pending drift bisnis (rumus/kondisi terdeteksi, belum disync ke
+     FEATURE-MAP.yaml) — **memblokir commit** (exit 1) kecuali jalankan
+     `/feature-map:flow-sync-apply` dulu atau override dengan
+     `FEATURE_MAP_ACK=1 git commit ...`.

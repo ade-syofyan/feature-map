@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-REPO_PLUGIN_ROOT = Path("/Users/adesyofyan/Documents/MApp/claude-plugins/feature-map")
+REPO_PLUGIN_ROOT = Path("/Users/adesyofyan/Documents/MApp/claude-plugins")
 CODEX_SKILL_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -156,6 +156,62 @@ def cmd_repo_register(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_rules_check(args: argparse.Namespace) -> int:
+    root = git_root(args.root)
+    add_plugin_hooks_to_path()
+    import fm_rules_check
+
+    fm_path = None
+    from feature_map_hook import find_feature_map, parse_feature_map
+    fm_path = find_feature_map(str(root))
+    if not fm_path:
+        print(json.dumps({"error": "FEATURE-MAP.yaml not found"}))
+        return 1
+    with open(fm_path, encoding="utf-8") as f:
+        flows = parse_feature_map(f.read())
+    if args.flow not in flows:
+        print(json.dumps({"error": f"flow '{args.flow}' not found",
+                           "available_flows": sorted(flows.keys())}))
+        return 1
+    result = fm_rules_check.check_flow(os.path.dirname(fm_path), args.flow, flows[args.flow])
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+def cmd_pending_status(args: argparse.Namespace) -> int:
+    root = git_root(args.root)
+    add_plugin_hooks_to_path()
+    import fm_pending
+
+    pending = fm_pending.load_all_pending(str(root))
+    print(json.dumps(pending, indent=2, ensure_ascii=False))
+    return 0
+
+
+def cmd_pending_clear(args: argparse.Namespace) -> int:
+    root = git_root(args.root)
+    add_plugin_hooks_to_path()
+    import fm_pending
+
+    for flow in args.flows:
+        fm_pending.clear_pending(str(root), flow)
+    print(f"Cleared: {', '.join(args.flows)}")
+    return 0
+
+
+def cmd_import_doc(args: argparse.Namespace) -> int:
+    add_plugin_hooks_to_path()
+    import fm_blueprint
+
+    rendered = fm_blueprint.generate_feature_map(args.document, args.source_path)
+    if args.output:
+        Path(args.output).write_text(rendered, encoding="utf-8")
+        print(f"Wrote draft feature map: {args.output}")
+    else:
+        print(rendered, end="")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -175,6 +231,26 @@ def build_parser() -> argparse.ArgumentParser:
     reg.add_argument("--list", action="store_true")
     reg.add_argument("--remove")
     reg.set_defaults(func=cmd_repo_register)
+
+    rules_check = sub.add_parser("rules-check", help="Cross-check a flow's invariants against its test touchpoints' descriptions.")
+    rules_check.add_argument("flow")
+    rules_check.add_argument("--root", default=None)
+    rules_check.set_defaults(func=cmd_rules_check)
+
+    pending_status = sub.add_parser("pending-status", help="List flows with pending drift not yet synced to FEATURE-MAP.yaml.")
+    pending_status.add_argument("root", nargs="?", default=None)
+    pending_status.set_defaults(func=cmd_pending_status)
+
+    pending_clear = sub.add_parser("pending-clear", help="Clear pending drift for one or more flows (after syncing or skipping).")
+    pending_clear.add_argument("root")
+    pending_clear.add_argument("flows", nargs="+")
+    pending_clear.set_defaults(func=cmd_pending_clear)
+
+    import_doc = sub.add_parser("import-doc", help="Generate draft FEATURE-MAP.yaml from blueprint/FRD/SRS/SOP documents.")
+    import_doc.add_argument("document")
+    import_doc.add_argument("-o", "--output")
+    import_doc.add_argument("--source-path")
+    import_doc.set_defaults(func=cmd_import_doc)
 
     root = sub.add_parser("plugin-root", help="Print resolved plugin root.")
     root.set_defaults(func=lambda _args: print(plugin_root()) or 0)

@@ -9,12 +9,90 @@ FEATURE-MAP.yaml yang terdokumentasi (lihat skill feature-map).
 import fnmatch
 import json
 import os
+import re
 import subprocess
 import sys
+from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fm_registry
 import fm_state
+import fm_pending
+
+
+# Kata kunci bisnis yang sering menandai baris berisi rumus/kalkulasi/aturan
+# ambang batas (bukan sekadar assignment biasa). Dipakai heuristik ringan di
+# detect_formula_change() -- sengaja luas & generik (bukan spesifik satu
+# domain) karena plugin ini dipakai lintas project (HR, finance, dll).
+FORMULA_KEYWORDS = (
+    "total", "formula", "rumus", "hitung", "calc", "threshold", "batas",
+    "tarif", "persen", "percent", "ratio", "rasio", "saldo", "gaji",
+    "komisi", "insentif", "sanksi", "denda", "bonus", "sisa", "potong",
+    "quota", "kuota", "limit", "sla", "score", "skor", "poin", "point",
+    "tidak_hadir", "tidakhadir",
+)
+
+# Baris kandidat rumus: ada assignment/return diikuti operator aritmatika
+# antara dua operand (menghindari false-positive dari path/URL/regex yang
+# kebetulan mengandung "/" atau "-").
+_FORMULA_LINE_RE = re.compile(
+    r"(=|return)\s*[^=;\n]*[\w\)\]]\s*[+\-*/]\s*[\w$'\"(]"
+)
+
+
+def _formula_source_text(tool_name, tool_input):
+    """Ekstrak teks yang baru ditulis/diedit dari tool_input, sesuai tool."""
+    if tool_name == "Edit":
+        return tool_input.get("new_string") or ""
+    if tool_name == "MultiEdit":
+        edits = tool_input.get("edits") or []
+        return "\n".join(e.get("new_string", "") for e in edits if isinstance(e, dict))
+    if tool_name in ("Write", "NotebookEdit"):
+        return tool_input.get("content") or tool_input.get("new_source") or ""
+    return ""
+
+
+def detect_formula_change(tool_name, tool_input):
+    """Cari baris yang kelihatan seperti rumus/kalkulasi bisnis di teks yang
+    baru ditulis. Return daftar baris (dipangkas) yang cocok, atau []."""
+    text = _formula_source_text(tool_name, tool_input)
+    if not text:
+        return []
+    hits = []
+    for line in text.splitlines():
+        low = line.lower()
+        if not any(kw in low for kw in FORMULA_KEYWORDS):
+            continue
+        if not _FORMULA_LINE_RE.search(line):
+            continue
+        snippet = line.strip()
+        if len(snippet) > 160:
+            snippet = snippet[:157] + "..."
+        hits.append(snippet)
+        if len(hits) >= 5:
+            break
+    return hits
+
+
+def _pending_diff(tool_name, tool_input):
+    """Ekstrak representasi diff ringkas dari tool_input untuk disimpan di
+    pending state, sesuai tool. Return `{}` kalau tool tidak relevan
+    (mis. Bash tanpa file_path sudah difilter oleh caller)."""
+    if tool_name == "Edit":
+        return {
+            "old_string": tool_input.get("old_string", ""),
+            "new_string": tool_input.get("new_string", ""),
+        }
+    if tool_name == "MultiEdit":
+        return {"edits": tool_input.get("edits") or []}
+    if tool_name in ("Write", "NotebookEdit"):
+        content = tool_input.get("content") or tool_input.get("new_source") or ""
+        lines = content.splitlines()
+        excerpt = lines[:40] if len(lines) <= 80 else lines[:20] + ["...", ] + lines[-20:]
+        return {"content_excerpt": "\n".join(excerpt)}
+    if tool_name == "Bash":
+        return {"command": tool_input.get("command", "")}
+    return {}
 
 
 def parse_feature_map(text):
@@ -24,7 +102,12 @@ def parse_feature_map(text):
       flows:
         <nama-flow>:
           description: <teks>
+          confidence: draft|reviewed|approved
           policy: <teks>
+          evidence:
+            - source: "<dokumen>"
+              page: 12
+              section: "<judul>"
           touchpoints:
             - path: "<glob>"
               role: <teks>
@@ -56,7 +139,9 @@ def parse_feature_map(text):
             current_flow = stripped[:-1].strip()
             flows[current_flow] = {"description": "", "policy": "",
                                    "touchpoints": [], "invariants": [],
-                                   "impacts": []}
+                                   "impacts": [], "evidence": [], "history": [],
+                                   "confidence": "", "mechanics_doc": "",
+                                   "last_reviewed": ""}
             current_list = None
             continue
         if current_flow is None:
@@ -64,7 +149,8 @@ def parse_feature_map(text):
 
         flow = flows[current_flow]
         if indent == 4:
-            if stripped.startswith(("touchpoints:", "invariants:", "impacts:")):
+            if stripped.startswith(("touchpoints:", "invariants:", "impacts:", "evidence:",
+                                    "history:")):
                 key, _, val = stripped.partition(":")
                 current_list = key.strip()
                 current_item = None
@@ -75,7 +161,8 @@ def parse_feature_map(text):
                     current_list = None
             elif ":" in stripped:
                 key, val = stripped.split(":", 1)
-                if key.strip() in ("description", "policy"):
+                if key.strip() in ("description", "policy", "confidence", "mechanics_doc",
+                                   "last_reviewed"):
                     flow[key.strip()] = unquote(val)
                 current_list = None
             continue
@@ -86,13 +173,13 @@ def parse_feature_map(text):
                 flow[current_list].append(unquote(body))
             else:
                 current_item = {}
-                flow["touchpoints"].append(current_item)
+                flow[current_list].append(current_item)
                 if ":" in body:
                     k, v = body.split(":", 1)
                     current_item[k.strip()] = unquote(v)
             continue
 
-        if current_list == "touchpoints" and current_item is not None and ":" in stripped:
+        if current_list in ("touchpoints", "evidence", "history") and current_item is not None and ":" in stripped:
             k, v = stripped.split(":", 1)
             current_item[k.strip()] = unquote(v)
 
@@ -265,12 +352,17 @@ def handle(payload):
     if not hits:
         return
 
+    tool_name = payload.get("tool_name") or ""
+    formula_snippets = detect_formula_change(tool_name, tool_input)
+
     lines = []
     for name, flow, matched_tp in hits:
         lines.append(f"[feature-map] File yang baru diedit adalah touchpoint "
                      f"'{matched_tp.get('role', '?')}' dari flow bisnis '{name}'.")
         if flow["policy"]:
             lines.append(f"  Policy saat ini: {flow['policy']}")
+        if flow.get("mechanics_doc"):
+            lines.append(f"  Dokumen cara main/aturan main detail: {flow['mechanics_doc']}")
         others = [tp for tp in flow["touchpoints"] if tp is not matched_tp]
         if others:
             lines.append("  Touchpoint lain yang mungkin harus ikut disesuaikan:")
@@ -291,6 +383,40 @@ def handle(payload):
         lines.append("  Periksa apakah perubahan ini menuntut penyesuaian di touchpoint lain; "
                      "kalau ya, kerjakan atau laporkan gap-nya ke user. Kalau policy berubah, "
                      "update FEATURE-MAP.yaml.")
+        if formula_snippets:
+            lines.append("  ⚠ RUMUS/KALKULASI BISNIS terdeteksi berubah di file ini (bukan sekadar "
+                         "reminder generik):")
+            for snip in formula_snippets:
+                lines.append(f"    | {snip}")
+            lines.append("  Kalau ini memang formula/threshold/kondisi bisnis (bukan cuma "
+                         "variabel biasa): tulis rumus lengkapnya (operand & urutannya, bukan "
+                         "cuma nama fungsi) sebagai invariant baru di FEATURE-MAP.yaml SEKARANG, "
+                         "walau task ini cuma 'audit'/'cek' dan user belum minta eksplisit — "
+                         "jangan tunggu ditanya user dulu baru dicatat.")
+            if flow.get("mechanics_doc"):
+                lines.append(f"  Rumus ini kompleks (banyak mode/varian/pengecualian)? Update juga "
+                             f"narasi & contoh angkanya di {flow['mechanics_doc']} di commit yang sama.")
+            else:
+                lines.append("  Kalau flow ini punya banyak mode/varian/pengecualian (bukan cuma "
+                             "1 rumus sederhana), pertimbangkan bikin docs/flows/"
+                             f"{name}.md berisi narasi lengkap + contoh angka, lalu daftarkan "
+                             "sebagai `mechanics_doc` di flow ini (lihat SKILL.md aturan #8).")
+
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    diff = _pending_diff(tool_name, tool_input)
+    for name, flow, matched_tp in hits:
+        fm_pending.write_pending(root, name, {
+            "flow": name,
+            "file": file_path,
+            "role": matched_tp.get("role", ""),
+            "tool_name": tool_name,
+            "diff": diff,
+            "formula_snippets": formula_snippets,
+            "current_policy": flow.get("policy", ""),
+            "current_invariants": list(flow.get("invariants", [])),
+            "current_mechanics_doc": flow.get("mechanics_doc", ""),
+            "timestamp": now,
+        })
 
     for origin, chain in chains.items():
         lines.append(f"[feature-map] Perubahan flow '{origin}' berdampak ke: "
