@@ -1,6 +1,6 @@
 {
   "name": "feature-map",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Business-flow dependency mapping for Claude Code and Codex: FEATURE-MAP.yaml registry, blueprint importer, reminders, stale audits, impact chains",
   "author": {
     "name": "Ade Syofyan",
