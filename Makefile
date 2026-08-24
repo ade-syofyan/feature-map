@@ -15,6 +15,13 @@ smoke:
 	$(PYTHON) hooks/fm_blueprint.py "$$tmp" -o "$$out"; \
 	grep -q 'payroll:' "$$out"; \
 	rm -f "$$tmp" "$$out"
+	app=$$(mktemp -d); extract=$$(mktemp -d); \
+	mkdir -p "$$app/src"; \
+	printf '{"dependencies":{"express":"^4.18.0"}}\n' > "$$app/package.json"; \
+	printf "router.get('/orders', listOrders);\n" > "$$app/src/orders.ts"; \
+	$(PYTHON) $(CLI) extract-app "$$app" -o "$$extract" --profile auto; \
+	test -f "$$extract/index.json"; \
+	rm -rf "$$app" "$$extract"
 
 install-codex:
 	mkdir -p "$(CODEX_SKILL_DIR)"
