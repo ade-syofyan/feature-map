@@ -61,6 +61,27 @@ def test_plugin_root_finds_source_repo_hooks_before_cache(monkeypatch, tmp_path)
     assert feature_map_cli.plugin_root() == source_root
 
 
+def test_plugin_root_uses_installed_marker_before_cache(monkeypatch, tmp_path):
+    source_root = tmp_path / "feature-map"
+    hooks = source_root / "hooks"
+    hooks.mkdir(parents=True)
+    (hooks / "feature_map_hook.py").write_text("")
+    skill_root = tmp_path / "skill"
+    skill_root.mkdir()
+    (skill_root / "plugin-root.txt").write_text(str(source_root))
+    cache_root = tmp_path / "cache"
+    (cache_root / "hooks").mkdir(parents=True)
+    (cache_root / "hooks" / "feature_map_hook.py").write_text("")
+    monkeypatch.setattr(feature_map_cli, "CODEX_SKILL_ROOT", skill_root)
+    monkeypatch.setattr(feature_map_cli, "REPO_PLUGIN_ROOT", tmp_path / "missing")
+    monkeypatch.setattr(feature_map_cli, "SOURCE_REPO_ROOT", tmp_path / "missing-source")
+    monkeypatch.setattr(feature_map_cli, "latest_cache_root", lambda: cache_root)
+    monkeypatch.delenv("FEATURE_MAP_PLUGIN_ROOT", raising=False)
+    monkeypatch.delenv("CLAUDE_PLUGIN_ROOT", raising=False)
+
+    assert feature_map_cli.plugin_root() == source_root
+
+
 def test_doctor_reports_install_health(monkeypatch, tmp_path, capsys):
     source_root = tmp_path / "feature-map"
     hooks = source_root / "hooks"

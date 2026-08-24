@@ -35,6 +35,11 @@ def plugin_root() -> Path:
                 os.environ.get("CLAUDE_PLUGIN_ROOT")):
         if raw and usable(Path(raw)):
             return Path(raw)
+    marker = CODEX_SKILL_ROOT / "plugin-root.txt"
+    if marker.is_file():
+        raw = marker.read_text(encoding="utf-8").strip()
+        if raw and usable(Path(raw)):
+            return Path(raw)
     for candidate in (REPO_PLUGIN_ROOT, SOURCE_REPO_ROOT):
         if usable(candidate):
             return candidate
