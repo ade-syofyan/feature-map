@@ -1,6 +1,8 @@
 import json
 import os
 import sys
+import types
+import builtins
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "hooks"))
 import feature_map_hook as hook
@@ -57,6 +59,59 @@ def test_parse_feature_map_preserves_hash_inside_quoted_values():
     assert flow["policy"] == "A # B"
     assert flow["touchpoints"][0]["note"] == "note # tetap"
     assert flow["invariants"] == ["hash # preserved"]
+
+
+def test_parse_feature_map_uses_pyyaml_when_available(monkeypatch):
+    fake_yaml = types.SimpleNamespace(
+        safe_load=lambda text: {
+            "flows": {
+                "quoted-hash": {
+                    "description": "demo # bukan komentar",
+                    "touchpoints": [{"path": "app/#x.py", "role": "backend"}],
+                    "invariants": ["hash # preserved"],
+                }
+            }
+        }
+    )
+    monkeypatch.setitem(sys.modules, "yaml", fake_yaml)
+
+    flow = hook.parse_feature_map("flows: {}")["quoted-hash"]
+
+    assert flow["description"] == "demo # bukan komentar"
+    assert flow["touchpoints"][0]["path"] == "app/#x.py"
+
+
+def test_parse_feature_map_falls_back_without_pyyaml(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("no yaml")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    flow = hook.parse_feature_map(FM)["attendance-recap"]
+
+    assert flow["description"] == "rekap presensi"
+    assert flow["invariants"] == ["Sanksi = TUM + Alpa"]
+
+
+def test_parse_feature_map_fallback_unescapes_quoted_strings(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("no yaml")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    flow = hook.parse_feature_map(
+        'flows:\n  sample:\n    invariants:\n      - "Field \\"Tanggal Efektif\\" tetap sama"\n'
+    )["sample"]
+
+    assert flow["invariants"] == ['Field "Tanggal Efektif" tetap sama']
 
 
 def test_detect_formula_change_finds_business_calculation():

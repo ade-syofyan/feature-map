@@ -11,7 +11,7 @@
 keep client, backend, admin, docs, and migration touchpoints of the same flow in sync —
 with proactive session context, post-edit reminders, and a `GAP`/`DRIFT`/`IMPACT`/`OK` audit.
 
-[![Version](https://img.shields.io/badge/version-0.10.1-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.10.2-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Registry](https://img.shields.io/badge/registry-FEATURE--MAP.yaml-ffb454?style=flat-square)](#quick-example)
@@ -170,7 +170,14 @@ rsync -a --delete codex-skill/feature-map/ ~/.codex/skills/feature-map/
 chmod +x ~/.codex/skills/feature-map/scripts/feature_map_cli.py
 ```
 
-Re-run the `rsync` command whenever you `git pull` an update — Codex reads only from `~/.codex/skills/feature-map/`, not from the cloned repo.
+Keep the cloned repo available, or set `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`, because the Codex CLI loads shared hook modules from the plugin source. Re-run the `rsync` command whenever you `git pull` an update — Codex reads skill instructions from `~/.codex/skills/feature-map/`, while the helper CLI resolves hook code from the clone, an installed Claude cache, or `FEATURE_MAP_PLUGIN_ROOT`.
+
+Verify the install:
+
+```bash
+~/.codex/skills/feature-map/scripts/feature_map_cli.py plugin-root
+~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+```
 
 Then ask Codex naturally:
 
@@ -184,6 +191,7 @@ Useful helper commands:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py status .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
+~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
 ```
 
 For blueprint imports in Codex, use the same CLI:
@@ -221,6 +229,8 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 - Makes blueprint/document import fail with a clear `Document not found: ...` message for missing input files.
 - Deduplicates hook-safe `.gitignore` appends through a shared helper.
 - Removes obsolete Superpowers planning/spec documents so stale internal design notes do not become future implementation guidance.
+- Adds `feature_map_cli.py doctor` as a lightweight install smoke test and documents Codex install verification.
+- Uses `PyYAML` for parsing when available, with the existing subset parser as a dependency-free fallback.
 
 #### v0.10.1 - License & CI
 
@@ -498,7 +508,14 @@ rsync -a --delete codex-skill/feature-map/ ~/.codex/skills/feature-map/
 chmod +x ~/.codex/skills/feature-map/scripts/feature_map_cli.py
 ```
 
-Jalankan ulang command `rsync` di atas setiap kali kamu `git pull` update terbaru — Codex cuma baca dari `~/.codex/skills/feature-map/`, bukan dari repo hasil clone.
+Biarkan repo hasil clone tetap ada, atau set `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`, karena CLI Codex memuat modul hook bersama dari source plugin. Jalankan ulang command `rsync` di atas setiap kali kamu `git pull` update terbaru — Codex membaca instruksi skill dari `~/.codex/skills/feature-map/`, sementara helper CLI resolve kode hook dari clone, cache Claude yang terpasang, atau `FEATURE_MAP_PLUGIN_ROOT`.
+
+Verifikasi install:
+
+```bash
+~/.codex/skills/feature-map/scripts/feature_map_cli.py plugin-root
+~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+```
 
 Lalu minta Codex secara natural:
 
@@ -512,6 +529,7 @@ Command helper yang berguna:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py status .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
+~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
 ```
 
 Untuk import blueprint di Codex, pakai CLI yang sama:
@@ -549,6 +567,8 @@ Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sud
 - Import blueprint/dokumen sekarang gagal dengan pesan jelas `Document not found: ...` kalau file input tidak ada.
 - Mengurangi duplikasi append `.gitignore` hook-safe lewat helper bersama.
 - Menghapus dokumen planning/spec Superpowers lama supaya catatan desain internal yang usang tidak jadi acuan implementasi berikutnya.
+- Menambahkan `feature_map_cli.py doctor` sebagai smoke test install ringan dan mendokumentasikan verifikasi install Codex.
+- Memakai `PyYAML` untuk parsing kalau tersedia, dengan parser subset lama sebagai fallback tanpa dependency.
 
 #### v0.10.1 - Lisensi & CI
 

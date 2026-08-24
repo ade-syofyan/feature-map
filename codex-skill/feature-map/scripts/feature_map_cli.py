@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -213,6 +214,54 @@ def cmd_import_doc(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_doctor(_args: argparse.Namespace) -> int:
+    root = add_plugin_hooks_to_path()
+    checks = {
+        "hooks_available": (root / "hooks" / "feature_map_hook.py").is_file(),
+        "parser_sample": False,
+        "blueprint_sample": False,
+    }
+    version = None
+    try:
+        manifest = root / ".claude-plugin" / "plugin.json"
+        if manifest.is_file():
+            version = json.loads(manifest.read_text(encoding="utf-8")).get("version")
+    except Exception:
+        version = None
+
+    try:
+        from feature_map_hook import parse_feature_map
+        flows = parse_feature_map(
+            'flows:\n  sample:\n    description: "sample # quoted"\n'
+            '    touchpoints:\n      - path: "app/#x.py"\n        role: backend\n'
+            '    invariants:\n      - "hash # preserved"\n'
+        )
+        checks["parser_sample"] = (
+            flows["sample"]["description"] == "sample # quoted"
+            and flows["sample"]["touchpoints"][0]["path"] == "app/#x.py"
+        )
+    except Exception:
+        pass
+
+    try:
+        import fm_blueprint
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8") as f:
+            f.write("WORKFLOW PAYROLL Input: Attendance. Output: Payroll.")
+            f.flush()
+            checks["blueprint_sample"] = "payroll:" in fm_blueprint.generate_feature_map(f.name)
+    except Exception:
+        pass
+
+    payload = {
+        "ok": all(checks.values()),
+        "plugin_root": str(root),
+        "version": version,
+        "checks": checks,
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0 if payload["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -252,6 +301,9 @@ def build_parser() -> argparse.ArgumentParser:
     import_doc.add_argument("-o", "--output")
     import_doc.add_argument("--source-path")
     import_doc.set_defaults(func=cmd_import_doc)
+
+    doctor = sub.add_parser("doctor", help="Run a local feature-map install smoke test.")
+    doctor.set_defaults(func=cmd_doctor)
 
     root = sub.add_parser("plugin-root", help="Print resolved plugin root.")
     root.set_defaults(func=lambda _args: print(plugin_root()) or 0)
