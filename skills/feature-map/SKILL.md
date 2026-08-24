@@ -43,7 +43,7 @@ flows:
         section: "WORKFLOW ABSENSI"
     touchpoints:
       - path: "glob/relatif/dari/root/**/File*.kt"
-        role: client-form        # client-form|client-view|backend-validation|backend-service|admin-view|docs|db-migration|event-consumer
+        role: client-form        # client-form|client-view|backend-validation|backend-service|admin-view|data-schema|docs|db-migration|event-consumer
         note: "opsional"
     invariants:
       - "aturan yang harus konsisten antar touchpoint"

@@ -129,12 +129,14 @@ def _flow_defaults(flow):
     data.setdefault("mechanics_doc", "")
     data.setdefault("last_reviewed", "")
     for key in ("evidence", "history", "touchpoints"):
-        data[key] = [
-            {k: str(v) for k, v in item.items()} if isinstance(item, dict) else item
-            for item in data.get(key, [])
-        ]
-    data["invariants"] = [str(item) for item in data.get("invariants", [])]
-    data["impacts"] = [str(item) for item in data.get("impacts", [])]
+        if isinstance(data.get(key), list):
+            data[key] = [
+                {k: str(v) for k, v in item.items()} if isinstance(item, dict) else item
+                for item in data.get(key, [])
+            ]
+    for key in ("invariants", "impacts"):
+        if isinstance(data.get(key), list):
+            data[key] = [str(item) for item in data.get(key, [])]
     return data
 
 

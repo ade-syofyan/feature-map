@@ -9,6 +9,7 @@ test:
 
 smoke:
 	$(PYTHON) $(CLI) doctor
+	$(PYTHON) $(CLI) validate . || true
 	tmp=$$(mktemp); out=$$(mktemp); \
 	printf 'WORKFLOW PAYROLL Input: Attendance. Output: Payroll.\n' > "$$tmp"; \
 	$(PYTHON) hooks/fm_blueprint.py "$$tmp" -o "$$out"; \

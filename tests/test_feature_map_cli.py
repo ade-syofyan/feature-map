@@ -173,3 +173,43 @@ def test_quality_report_requires_feature_map(tmp_path, capsys):
 
     assert payload["ok"] is False
     assert payload["error"] == "FEATURE-MAP.yaml not found"
+
+
+def test_validate_report_flags_schema_errors(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  payroll:\n'
+        '    description: "Payroll"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Payroll.php"\n'
+        '        role: service-ish\n'
+        '      - role: backend-service\n'
+        '    invariants: "not-a-list"\n'
+    )
+
+    assert feature_map_cli.cmd_validate(type("Args", (), {"root": str(tmp_path)})()) == 1
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is False
+    assert {"type": "invalid-role", "flow": "payroll", "role": "service-ish"} in payload["issues"]
+    assert {"type": "missing-touchpoint-path", "flow": "payroll"} in payload["issues"]
+    assert {"type": "invalid-list-field", "flow": "payroll", "field": "invariants"} in payload["issues"]
+
+
+def test_validate_report_ok_for_supported_schema(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  attendance:\n'
+        '    description: "Attendance"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Attendance.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Attendance status must match reports"\n'
+    )
+
+    assert feature_map_cli.cmd_validate(type("Args", (), {"root": str(tmp_path)})()) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is True
+    assert payload["issues"] == []

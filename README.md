@@ -191,6 +191,7 @@ Useful helper commands:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+~/.codex/skills/feature-map/scripts/feature_map_cli.py validate .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
 ```
 
@@ -333,6 +334,7 @@ Supported touchpoint roles:
 - `backend-validation`
 - `backend-service`
 - `admin-view`
+- `data-schema`
 - `docs`
 - `db-migration`
 - `event-consumer`
@@ -530,6 +532,7 @@ Command helper yang berguna:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+~/.codex/skills/feature-map/scripts/feature_map_cli.py validate .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
 ```
 
@@ -672,6 +675,7 @@ Role touchpoint yang didukung:
 - `backend-validation`
 - `backend-service`
 - `admin-view`
+- `data-schema`
 - `docs`
 - `db-migration`
 - `event-consumer`
