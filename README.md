@@ -214,6 +214,14 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 
 ### Releases
 
+#### v0.10.2 - CLI Hardening & Stale Docs Cleanup
+
+- Fixes Codex plugin-root resolution so the CLI ignores directories that do not contain `hooks/feature_map_hook.py`, prefers the source checkout when available, and no longer falls back to a stale parent plugin folder that can cause `ModuleNotFoundError`.
+- Preserves `#` characters inside quoted `FEATURE-MAP.yaml` values instead of treating them as comments.
+- Makes blueprint/document import fail with a clear `Document not found: ...` message for missing input files.
+- Deduplicates hook-safe `.gitignore` appends through a shared helper.
+- Removes obsolete Superpowers planning/spec documents so stale internal design notes do not become future implementation guidance.
+
 #### v0.10.1 - License & CI
 
 - Adds an MIT `LICENSE` file.
@@ -533,6 +541,14 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.10.2 - Penguatan CLI & Pembersihan Dokumen Usang
+
+- Memperbaiki resolusi plugin root di Codex CLI: folder yang tidak punya `hooks/feature_map_hook.py` diabaikan, checkout source diprioritaskan kalau tersedia, dan CLI tidak lagi jatuh ke parent plugin lama yang bisa memicu `ModuleNotFoundError`.
+- Mempertahankan karakter `#` di dalam nilai quoted `FEATURE-MAP.yaml`, bukan memotongnya sebagai komentar.
+- Import blueprint/dokumen sekarang gagal dengan pesan jelas `Document not found: ...` kalau file input tidak ada.
+- Mengurangi duplikasi append `.gitignore` hook-safe lewat helper bersama.
+- Menghapus dokumen planning/spec Superpowers lama supaya catatan desain internal yang usang tidak jadi acuan implementasi berikutnya.
 
 #### v0.10.1 - Lisensi & CI
 

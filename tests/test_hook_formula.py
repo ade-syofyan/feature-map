@@ -38,6 +38,27 @@ def test_parse_feature_map_defaults_mechanics_doc_to_empty():
     assert flows["simple"]["mechanics_doc"] == ""
 
 
+def test_parse_feature_map_preserves_hash_inside_quoted_values():
+    fm = """flows:
+  quoted-hash:
+    description: "demo # bukan komentar"
+    policy: "A # B"
+    touchpoints:
+      - path: "app/#x.py"
+        role: backend-service
+        note: "note # tetap"
+    invariants:
+      - "hash # preserved"
+"""
+
+    flow = hook.parse_feature_map(fm)["quoted-hash"]
+
+    assert flow["description"] == "demo # bukan komentar"
+    assert flow["policy"] == "A # B"
+    assert flow["touchpoints"][0]["note"] == "note # tetap"
+    assert flow["invariants"] == ["hash # preserved"]
+
+
 def test_detect_formula_change_finds_business_calculation():
     new_string = (
         "$salesTotals['tidak_hadir'] = $salesTotals['tum'] + $salesTotals['alpa'] "

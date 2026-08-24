@@ -10,19 +10,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from feature_map_hook import find_feature_map
+import fm_io
 import fm_pending
-
-
-def find_feature_map(start_dir):
-    d = os.path.abspath(start_dir)
-    while True:
-        candidate = os.path.join(d, "FEATURE-MAP.yaml")
-        if os.path.isfile(candidate):
-            return candidate
-        parent = os.path.dirname(d)
-        if parent == d:
-            return None
-        d = parent
 
 
 def _reminded_marker_path(root, session_id):
@@ -32,23 +22,6 @@ def _reminded_marker_path(root, session_id):
     safe_session = fm_pending.sanitize_flow_id(session_id or "unknown")
     state_dir = os.path.join(root, ".claude", "feature-map-state")
     return os.path.join(state_dir, f"stop-reminded-{safe_session}.json")
-
-
-def _ensure_gitignore(root):
-    gi_path = os.path.join(root, ".gitignore")
-    try:
-        existing = ""
-        if os.path.isfile(gi_path):
-            with open(gi_path, encoding="utf-8") as f:
-                existing = f.read()
-        if ".claude/feature-map-state/" in existing:
-            return
-        with open(gi_path, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            f.write(".claude/feature-map-state/\n")
-    except Exception:
-        pass
 
 
 def _load_reminded(marker_path):
@@ -62,7 +35,7 @@ def _load_reminded(marker_path):
 def _save_reminded(root, marker_path, flow_ids):
     try:
         os.makedirs(os.path.dirname(marker_path), exist_ok=True)
-        _ensure_gitignore(root)
+        fm_io.append_gitignore(root, ".claude/feature-map-state/")
         with open(marker_path, "w", encoding="utf-8") as f:
             json.dump(sorted(flow_ids), f)
     except Exception:

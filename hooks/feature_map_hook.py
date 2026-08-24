@@ -95,6 +95,27 @@ def _pending_diff(tool_name, tool_input):
     return {}
 
 
+def strip_comment(line):
+    quote = None
+    escaped = False
+    for i, char in enumerate(line):
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\":
+            escaped = True
+            continue
+        if char in "\"'":
+            if quote == char:
+                quote = None
+            elif quote is None:
+                quote = char
+            continue
+        if char == "#" and quote is None and (i == 0 or line[i - 1].isspace()):
+            return line[:i].rstrip()
+    return line.rstrip()
+
+
 def parse_feature_map(text):
     """Parse subset YAML sesuai skema FEATURE-MAP.yaml.
 
@@ -122,7 +143,7 @@ def parse_feature_map(text):
     in_flows = False
 
     for raw in text.splitlines():
-        line = raw.split(" #", 1)[0].rstrip() if not raw.strip().startswith("#") else ""
+        line = strip_comment(raw)
         if not line.strip():
             continue
         indent = len(line) - len(line.lstrip())

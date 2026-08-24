@@ -42,6 +42,8 @@ def yaml_quote(text):
 
 
 def read_pages(path):
+    if not os.path.exists(path):
+        raise SystemExit(f"Document not found: {path}")
     ext = os.path.splitext(path)[1].lower()
     if ext == ".pdf":
         try:
@@ -94,7 +96,7 @@ def infer_paths(slug):
     ]
 
 
-def extract_workflows(pages, source_name):
+def extract_workflows(pages, _source_name=None):
     flows = []
     seen = set()
     for page, text in pages:
@@ -118,7 +120,6 @@ def extract_workflows(pages, source_name):
                 "page": page,
                 "snippet": snippet,
                 "terms": terms,
-                "source_name": source_name,
             })
     return flows
 
