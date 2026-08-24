@@ -385,6 +385,11 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 - Adds `feature_map_cli.py extract-app` to create a read-only migration pack from an existing app into one output folder.
 - Supports `--profile auto` with Laravel and common Node stack detection, plus generic fallback for non-PHP codebases.
 - Extracts route inventory, UI forms/actions/filters, dependency hints, model/table touchpoints, schema summaries, API candidates, client surfaces, and risk notes for agent consumption in a rewrite, mobile, desktop, or microservice project.
+- Documents end-to-end App Migration Extractor usage: command arguments, workflow, output tree, prompt examples, limitations, and troubleshooting.
+- Adds `BENCHMARK.md` and `POSITIONING.md` for smoke-proof evidence, adjacent-tool boundaries, and safer product positioning.
+- Adds Codex install/smoke helpers, plus `doctor`, `quality`, and `validate` CLI commands for install health, map quality, and schema checks.
+- Hardens the YAML fallback parser so invalid list scalars are still flagged while inline empty lists remain valid without PyYAML.
+- Updates GitHub Actions to Node 24-compatible action versions.
 - Keeps the scan static and read-only: no source edits and no database connection in this MVP.
 
 #### v0.10.2 - CLI Hardening & Stale Docs Cleanup
@@ -888,6 +893,11 @@ Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sud
 - Menambahkan `feature_map_cli.py extract-app` untuk membuat migration pack read-only dari app lama ke satu folder output.
 - Mendukung `--profile auto` dengan deteksi Laravel dan stack Node umum, plus fallback generic untuk codebase non-PHP.
 - Mengekstrak inventory route, form/action/filter UI, hint dependency, touchpoint model/tabel, ringkasan schema, kandidat API, client surface, dan catatan risiko untuk dikonsumsi agent di project rewrite, mobile, desktop, atau microservice.
+- Mendokumentasikan pemakaian App Migration Extractor end-to-end: argumen command, workflow, bentuk output, contoh prompt, limitasi, dan troubleshooting.
+- Menambahkan `BENCHMARK.md` dan `POSITIONING.md` untuk bukti smoke, batas dengan tool adjacent, dan positioning produk yang lebih aman.
+- Menambahkan helper install/smoke Codex serta command CLI `doctor`, `quality`, dan `validate` untuk cek install, kualitas map, dan schema.
+- Memperkuat fallback parser YAML supaya scalar list yang invalid tetap terdeteksi, sementara inline empty list tetap valid tanpa PyYAML.
+- Mengupdate GitHub Actions ke versi action yang kompatibel dengan Node 24.
 - Scan tetap statis dan read-only: tidak mengedit source dan tidak membuka koneksi database pada MVP ini.
 
 #### v0.10.2 - Penguatan CLI & Pembersihan Dokumen Usang
