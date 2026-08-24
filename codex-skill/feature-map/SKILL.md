@@ -109,7 +109,7 @@ content, but at minimum should cover: a summary of each mode/variant, the full f
 numeric examples (not just variable names), and a list of exceptions/edge cases with their
 business reasoning.
 
-Supported touchpoint roles include `client-form`, `client-view`, `backend-validation`, `backend-service`, `admin-view`, `docs`, `db-migration`, and `event-consumer`.
+Supported touchpoint roles include `client-form`, `client-view`, `backend-validation`, `backend-service`, `admin-view`, `data-schema`, `docs`, `db-migration`, and `event-consumer`.
 
 For multi-repo touchpoints, `repo: <name>` resolves through `~/.claude/feature-maps/registry.json` unless `FEATURE_MAP_REGISTRY` is set.
 

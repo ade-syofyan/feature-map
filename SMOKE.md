@@ -12,12 +12,14 @@ make smoke
 python3 codex-skill/feature-map/scripts/feature_map_cli.py plugin-root
 python3 codex-skill/feature-map/scripts/feature_map_cli.py doctor
 python3 codex-skill/feature-map/scripts/feature_map_cli.py status .
+python3 codex-skill/feature-map/scripts/feature_map_cli.py validate .
 ```
 
 Expected:
 
 - `plugin-root` points to a directory containing `hooks/feature_map_hook.py`.
 - `doctor` returns JSON with `"ok": true`.
+- `validate` returns JSON. In this plugin repo it exits 1 with `FEATURE-MAP.yaml not found`, because the plugin repo itself has no map.
 - Temporary `make install-codex` writes `plugin-root.txt` and the installed CLI doctor resolves this checkout.
 - `make smoke` runs `doctor` and a tiny blueprint import without leaving a draft file in the repo.
 - `status` exits 0. In this plugin repo it may show no flows because the repo itself does not need a `FEATURE-MAP.yaml`.
@@ -57,6 +59,7 @@ Use this only when the local HRIS checkout exists:
 ```bash
 python3 codex-skill/feature-map/scripts/feature_map_cli.py status /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
 python3 codex-skill/feature-map/scripts/feature_map_cli.py pending-status /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
+python3 codex-skill/feature-map/scripts/feature_map_cli.py validate /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
 python3 codex-skill/feature-map/scripts/feature_map_cli.py quality /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
 ```
 
@@ -64,5 +67,6 @@ Expected:
 
 - `status` parses `FEATURE-MAP.yaml` and prints flow counts.
 - `pending-status` exits 0.
+- `validate` exits 0 when the map shape is valid.
 - `quality` exits 0 when the map has no draft flows, placeholder/dead local touchpoints, or missing invariants.
 - Do not edit HRIS business logic during smoke. If you stage a temporary hook test, revert it immediately and verify the HRIS worktree is clean.

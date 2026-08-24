@@ -15,6 +15,18 @@ from pathlib import Path
 REPO_PLUGIN_ROOT = Path("/Users/adesyofyan/Documents/MApp/claude-plugins")
 CODEX_SKILL_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_REPO_ROOT = CODEX_SKILL_ROOT.parent.parent
+SUPPORTED_ROLES = {
+    "client-form",
+    "client-view",
+    "backend-validation",
+    "backend-service",
+    "admin-view",
+    "data-schema",
+    "docs",
+    "db-migration",
+    "event-consumer",
+}
+LIST_FIELDS = ("touchpoints", "invariants", "impacts", "evidence", "history")
 
 
 def latest_cache_root() -> Path | None:
@@ -339,6 +351,51 @@ def cmd_quality(args: argparse.Namespace) -> int:
     return 0 if payload["ok"] else 1
 
 
+def cmd_validate(args: argparse.Namespace) -> int:
+    try:
+        root = git_root(args.root)
+    except SystemExit:
+        root = Path(args.root or os.getcwd()).resolve()
+    if not (root / "FEATURE-MAP.yaml").is_file():
+        print(json.dumps({
+            "ok": False,
+            "repo_root": str(root),
+            "error": "FEATURE-MAP.yaml not found",
+        }, indent=2, ensure_ascii=False))
+        return 1
+
+    add_plugin_hooks_to_path()
+    flows = read_flows(root)
+    issues = []
+    for name, flow in sorted(flows.items()):
+        if not isinstance(flow, dict):
+            issues.append({"type": "invalid-flow", "flow": name})
+            continue
+        for field in LIST_FIELDS:
+            if not isinstance(flow.get(field, []), list):
+                issues.append({"type": "invalid-list-field", "flow": name, "field": field})
+        for tp in flow.get("touchpoints", []):
+            if not isinstance(tp, dict):
+                issues.append({"type": "invalid-touchpoint", "flow": name})
+                continue
+            if not tp.get("path"):
+                issues.append({"type": "missing-touchpoint-path", "flow": name})
+            role = tp.get("role")
+            if not role:
+                issues.append({"type": "missing-touchpoint-role", "flow": name, "path": tp.get("path", "")})
+            elif role not in SUPPORTED_ROLES:
+                issues.append({"type": "invalid-role", "flow": name, "role": role})
+
+    payload = {
+        "ok": not issues,
+        "repo_root": str(root),
+        "flows": len(flows),
+        "issues": issues,
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0 if payload["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -385,6 +442,10 @@ def build_parser() -> argparse.ArgumentParser:
     quality = sub.add_parser("quality", help="Report FEATURE-MAP.yaml quality issues.")
     quality.add_argument("root", nargs="?", default=None)
     quality.set_defaults(func=cmd_quality)
+
+    validate = sub.add_parser("validate", help="Validate FEATURE-MAP.yaml schema shape.")
+    validate.add_argument("root", nargs="?", default=None)
+    validate.set_defaults(func=cmd_validate)
 
     root = sub.add_parser("plugin-root", help="Print resolved plugin root.")
     root.set_defaults(func=lambda _args: print(plugin_root()) or 0)
