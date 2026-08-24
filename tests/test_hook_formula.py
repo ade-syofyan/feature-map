@@ -97,6 +97,50 @@ def test_parse_feature_map_falls_back_without_pyyaml(monkeypatch):
     assert flow["invariants"] == ["Sanksi = TUM + Alpa"]
 
 
+def test_parse_feature_map_fallback_preserves_invalid_list_scalars(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("no yaml")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    flows = hook.parse_feature_map(
+        'flows:\n'
+        '  payroll:\n'
+        '    description: "Payroll"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Payroll.php"\n'
+        '        role: backend-service\n'
+        '    invariants: "not-a-list"\n'
+    )
+
+    assert flows["payroll"]["invariants"] == "not-a-list"
+
+
+def test_parse_feature_map_fallback_keeps_inline_empty_lists(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("no yaml")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    flows = hook.parse_feature_map(
+        'flows:\n'
+        '  payroll:\n'
+        '    touchpoints: []\n'
+        '    invariants: []\n'
+    )
+
+    assert flows["payroll"]["touchpoints"] == []
+    assert flows["payroll"]["invariants"] == []
+
+
 def test_parse_feature_map_fallback_unescapes_quoted_strings(monkeypatch):
     real_import = builtins.__import__
 
