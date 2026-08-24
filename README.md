@@ -192,6 +192,7 @@ Useful helper commands:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
 ```
 
 For blueprint imports in Codex, use the same CLI:
@@ -230,6 +231,7 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 - Deduplicates hook-safe `.gitignore` appends through a shared helper.
 - Removes obsolete Superpowers planning/spec documents so stale internal design notes do not become future implementation guidance.
 - Adds `feature_map_cli.py doctor` as a lightweight install smoke test and documents Codex install verification.
+- Adds `feature_map_cli.py quality` to report draft flows, placeholder/dead touchpoints, and missing invariants before agents rely on a map.
 - Uses `PyYAML` for parsing when available, with the existing subset parser as a dependency-free fallback.
 
 #### v0.10.1 - License & CI
@@ -530,6 +532,7 @@ Command helper yang berguna:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py repo-register my-service
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean . partner-registration
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
+~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
 ```
 
 Untuk import blueprint di Codex, pakai CLI yang sama:
@@ -568,6 +571,7 @@ Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sud
 - Mengurangi duplikasi append `.gitignore` hook-safe lewat helper bersama.
 - Menghapus dokumen planning/spec Superpowers lama supaya catatan desain internal yang usang tidak jadi acuan implementasi berikutnya.
 - Menambahkan `feature_map_cli.py doctor` sebagai smoke test install ringan dan mendokumentasikan verifikasi install Codex.
+- Menambahkan `feature_map_cli.py quality` untuk melaporkan flow draft, touchpoint placeholder/mati, dan invariant yang belum ada sebelum map dipakai agent.
 - Memakai `PyYAML` untuk parsing kalau tersedia, dengan parser subset lama sebagai fallback tanpa dependency.
 
 #### v0.10.1 - Lisensi & CI

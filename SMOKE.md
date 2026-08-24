@@ -51,10 +51,12 @@ Use a trusted repository with a reviewed map:
 ```bash
 python3 codex-skill/feature-map/scripts/feature_map_cli.py status /path/to/app
 python3 codex-skill/feature-map/scripts/feature_map_cli.py pending-status /path/to/app
+python3 codex-skill/feature-map/scripts/feature_map_cli.py quality /path/to/app
 ```
 
 Expected:
 
 - `status` parses `FEATURE-MAP.yaml` and prints flow counts.
 - `pending-status` exits 0.
+- `quality` exits 0 when the map has no draft flows, placeholder/dead local touchpoints, or missing invariants.
 - Keep the target repository unchanged during smoke checks.

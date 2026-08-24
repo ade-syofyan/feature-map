@@ -85,3 +85,70 @@ def test_doctor_reports_install_health(monkeypatch, tmp_path, capsys):
     assert payload["checks"]["parser_sample"] is True
     assert payload["checks"]["blueprint_sample"] is True
     assert payload["version"] == "0.10.2"
+
+
+def test_quality_report_flags_placeholder_dead_and_missing_rules(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  payroll:\n'
+        '    description: "Payroll"\n'
+        '    confidence: draft\n'
+        '    touchpoints:\n'
+        '      - path: "app/**/payroll/**"\n'
+        '        role: backend-service\n'
+        '        note: "Placeholder backend path"\n'
+        '      - path: "resources/views/payroll/index.blade.php"\n'
+        '        role: admin-view\n'
+        '    invariants: []\n'
+        '  attendance:\n'
+        '    description: "Attendance"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Attendance.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Attendance status must match reports"\n'
+    )
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "Attendance.php").write_text("<?php\n")
+
+    assert feature_map_cli.cmd_quality(type("Args", (), {"root": str(tmp_path)})()) == 1
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is False
+    assert payload["flows"] == 2
+    assert payload["summary"]["draft_flows"] == 1
+    assert payload["summary"]["placeholder_touchpoints"] == 1
+    assert payload["summary"]["dead_touchpoints"] == 2
+    assert payload["summary"]["missing_invariants"] == 1
+
+
+def test_quality_report_ok_for_resolved_map(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  attendance:\n'
+        '    description: "Attendance"\n'
+        '    policy: "Follow attendance policy"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Attendance.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Attendance status must match reports"\n'
+    )
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "Attendance.php").write_text("<?php\n")
+
+    assert feature_map_cli.cmd_quality(type("Args", (), {"root": str(tmp_path)})()) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is True
+    assert payload["issues"] == []
+
+
+def test_quality_report_requires_feature_map(tmp_path, capsys):
+    assert feature_map_cli.cmd_quality(type("Args", (), {"root": str(tmp_path)})()) == 1
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is False
+    assert payload["error"] == "FEATURE-MAP.yaml not found"
