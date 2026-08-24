@@ -219,6 +219,12 @@ def parse_feature_map(text):
                     flow["impacts"] = [unquote(x) for x in val[1:-1].split(",")
                                        if x.strip()]
                     current_list = None
+                elif val == "[]":
+                    flow[current_list] = []
+                    current_list = None
+                elif val:
+                    flow[current_list] = unquote(val)
+                    current_list = None
             elif ":" in stripped:
                 key, val = stripped.split(":", 1)
                 if key.strip() in ("description", "policy", "confidence", "mechanics_doc",
