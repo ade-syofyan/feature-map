@@ -4,16 +4,20 @@
 
 # feature-map
 
-### Cross-layer business-flow mapping for Claude Code &amp; Codex
+### Local-first business-flow and migration-discovery maps for AI coding agents
 
 **Stop AI coding agents from editing one side of a business rule and forgetting the other.**
 `feature-map` is a `FEATURE-MAP.yaml` registry, a Claude Code plugin, and a Codex skill that
 keep client, backend, admin, docs, and migration touchpoints of the same flow in sync —
 with proactive session context, post-edit reminders, and a `GAP`/`DRIFT`/`IMPACT`/`OK` audit.
+It also includes an **App Migration Extractor** for turning a legacy or target app into a
+read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
+and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.10.2-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.10.3-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
+[![Migration](https://img.shields.io/badge/app%20migration-extractor-22c55e?style=flat-square)](#app-migration-extractor)
 [![Registry](https://img.shields.io/badge/registry-FEATURE--MAP.yaml-ffb454?style=flat-square)](#quick-example)
 
 <p>
@@ -30,6 +34,10 @@ with proactive session context, post-edit reminders, and a `GAP`/`DRIFT`/`IMPACT
 
 `feature-map` helps Claude Code and Codex keep cross-layer business behavior consistent. It maps the files that belong to the same business flow, reminds the agent when one touchpoint changes, and gives you an audit path before silent drift becomes a production bug.
 
+It also solves a second pain: understanding an existing app before you rebuild it. The **App Migration Extractor** scans a legacy app, monolith, or existing service in read-only mode and writes a migration pack that another AI agent or developer can use as a starting map for a new API, UI, mobile app, desktop app, or microservice boundary.
+
+Think of it as a small, local-first context layer for product behavior: not a chat answer, not a SaaS index, and not an automatic rewrite. It creates reviewable files that say, "these routes, screens, tables, and invariants belong together."
+
 Most code tools understand imports, callers, and symbols. Real product bugs often live somewhere else:
 
 - a mobile form changed, but backend validation did not
@@ -38,6 +46,19 @@ Most code tools understand imports, callers, and symbols. Real product bugs ofte
 - a payment rule changed, but reporting, notifications, and migration logic stayed behind
 
 `feature-map` exists for that semantic layer.
+
+### Why Developers Look For This
+
+When a team inherits an old app, the hard part is rarely "find a file." The hard part is answering product questions without breaking production:
+
+- What menus and screens exist?
+- Which routes power each feature?
+- Which buttons, filters, forms, and exports does the UI expose?
+- What auth, middleware, and permissions protect the flow?
+- Which tables, models, casts, and schema details must stay compatible?
+- Which parts are safe candidates for a new API or client app?
+
+`feature-map` turns those answers into reviewable files instead of a one-off chat transcript.
 
 ### Available For
 
@@ -57,6 +78,7 @@ The Claude plugin and Codex skill use the same `FEATURE-MAP.yaml` registry, so o
 - **Audits drift** with `GAP`, `DRIFT`, `IMPACT`, `RULE-GAP`, and `OK` findings
 - **Flags undocumented business rules** by cross-checking test-touchpoint descriptions against declared invariants
 - **Imports blueprint/FRD/SRS documents** into draft flow maps with page evidence
+- **Extracts existing apps for migration** into a read-only pack of routes, UI actions, auth hints, data touchpoints, schema summaries, API candidates, and client surfaces
 - **Supports multi-repo flows** through a local repo registry
 - **Follows impact chains** with declared `impacts`
 - **Uses call-graph blast radius** when `.code-review-graph/graph.db` is present
@@ -74,6 +96,105 @@ The goal is simple:
 > When one part of a business flow changes, the rest of the flow should not be forgotten.
 
 This plugin is meant to grow into a shared safety layer for AI-assisted engineering: small enough to install anywhere, explicit enough to review in Git, and practical enough to help during real edits.
+
+### App Migration Extractor
+
+Reading an old app by hand is slow: routes live in one place, menus in another, validation in controllers, format rules in helpers, and database meaning is scattered through models and migrations. The **App Migration Extractor** gives an AI agent a starting map before a rewrite, partial migration, mobile/desktop build, or microservice split.
+
+```bash
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
+```
+
+Arguments:
+
+- `root`: path to the existing app you want to scan
+- `-o, --output`: output folder for the generated migration pack
+- `--profile`: `auto`, `laravel`, `express`, `nestjs`, `nextjs`, `node`, or `generic`
+- `--module`: optional module filter; use `all` to write every detected module
+
+Recommended workflow:
+
+1. Run `extract-app` against the old app, writing output outside the source repo if you want to keep its working tree untouched.
+2. Open `app-migration-extract/index.md` for the high-level map.
+3. Open `app-migration-extract/index.json` when another tool or AI agent needs structured input.
+4. Pick only the module folders you need for the new API, UI, mobile, desktop, or service.
+5. Treat files under `risks-and-open-questions.md` as manual review items before implementation.
+
+It scans the target app in read-only mode and collects the findings into one folder:
+
+- route inventory and candidate API boundaries
+- UI screens, forms, buttons, filters, and route references
+- auth and middleware hints
+- dependency and helper/library clues
+- model, table, migration, cast, and schema summaries
+- client surfaces for web, mobile, desktop, or other new frontends
+- risk notes where static analysis cannot prove the business relation
+
+Output shape:
+
+```text
+app-migration-extract/
+  index.json
+  index.md
+  discovery/
+    tech-stack.md
+    route-map.md
+    menu-map.md
+  database/
+    schema-summary.md
+    table-map.json
+  modules/
+    <module>/
+      overview.md
+      route-flow.md
+      ui-actions.md
+      forms-filters.md
+      db-touchpoints.md
+      api-candidates.md
+      client-surfaces.md
+      risks-and-open-questions.md
+```
+
+This is built for the painful migration work developers actually face: a legacy monolith, an older stack, or even an existing microservice app that needs to become the source object for a new API engine or client experience without disturbing the old app.
+
+Prompt it into the next project:
+
+```text
+Use app-migration-extract/ as the source map. Build the new API and client only from the selected modules. Preserve field names, status values, date/currency formats, auth assumptions, and database compatibility unless the extract marks them as open questions.
+```
+
+Limitations:
+
+- Static scan cannot prove every dynamic route, runtime menu, permission policy, or database relationship.
+- The extractor does not connect to the database in this MVP.
+- The extractor does not generate new API code or rewrite the old app.
+- The output is a migration starting map; domain owners still need to review critical business rules.
+
+### Proof, Not Hype
+
+The extractor is intentionally benchmarked as a local, reproducible smoke test instead of a vague claim. On this repo's fixture suite it is covered by Laravel and Node/Express tests. On a real Laravel HRIS app smoke run, it produced a valid read-only migration pack with:
+
+- 32 detected routes
+- 346 detected view/client files
+- 181 detected database tables
+- 161 module candidates
+- valid `index.json` output
+
+See [BENCHMARK.md](BENCHMARK.md) and [SMOKE.md](SMOKE.md) for the verification flow. The numbers are not a universal benchmark; they are proof that the command runs against a non-trivial app and returns structured, parseable output without editing the source app.
+
+### Positioning
+
+There are strong tools for code search, codebase context, and AI documentation. `feature-map` is narrower on purpose: it focuses on local, Git-reviewable business-flow continuity and migration discovery.
+
+| Need | Common tooling | `feature-map` angle |
+| --- | --- | --- |
+| Search and navigate huge codebases | Code search and codebase-context platforms | Uses existing files to build focused business-flow maps for Claude/Codex tasks |
+| Generate or maintain code documentation | AI documentation platforms | Keeps flow invariants and migration packs close to Git, tests, and source evidence |
+| Modernize a legacy app | Migration consulting, refactoring agents, manual discovery | Starts with route/UI/auth/data discovery before any rewrite touches production code |
+| Split a monolith or rebuild a client | Architecture docs and team interviews | Extracts route, UI, auth, table, and API-candidate clues into one folder |
+| Keep AI edits from drifting | Generic code review or chat memory | Marks mapped flows stale and audits cross-layer behavior with `GAP`, `DRIFT`, `IMPACT`, and `OK` |
+
+The goal is not to beat every code-understanding platform. The goal is to give AI coding agents a boring, explicit map of product behavior they can check before they change code.
 
 ### Quick Example
 
@@ -193,6 +314,7 @@ Useful helper commands:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py validate .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
 ```
 
 For blueprint imports in Codex, use the same CLI:
@@ -222,6 +344,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.10.3 - App Migration Extract
+
+- Adds `feature_map_cli.py extract-app` to create a read-only migration pack from an existing app into one output folder.
+- Supports `--profile auto` with Laravel and common Node stack detection, plus generic fallback for non-PHP codebases.
+- Extracts route inventory, UI forms/actions/filters, dependency hints, model/table touchpoints, schema summaries, API candidates, client surfaces, and risk notes for agent consumption in a rewrite, mobile, desktop, or microservice project.
+- Keeps the scan static and read-only: no source edits and no database connection in this MVP.
 
 #### v0.10.2 - CLI Hardening & Stale Docs Cleanup
 
@@ -371,6 +500,12 @@ If this idea matches a bug your team has seen before, open an issue, propose a f
 
 `feature-map` membantu Claude Code dan Codex menjaga konsistensi perilaku bisnis lintas layer. Plugin ini memetakan file-file yang berada dalam flow bisnis yang sama, mengingatkan agent saat salah satu touchpoint berubah, dan memberi jalur audit sebelum drift diam-diam menjadi bug production.
 
+Di dalamnya juga ada **App Migration Extractor** untuk mengubah app lama atau app target menjadi paket migrasi read-only: route, flow UI, hint auth, touchpoint data, kandidat API, dan petunjuk schema dikumpulkan ke satu folder untuk bekal project baru.
+
+Beban lain yang disasar: memahami app lama sebelum dibangun ulang. Extractor bisa scan monolith, legacy app, atau service yang sudah ada secara read-only, lalu menulis peta awal untuk kebutuhan API baru, UI baru, mobile app, desktop app, atau pemecahan microservice.
+
+Anggap ini sebagai context layer kecil dan local-first untuk perilaku produk: bukan jawaban chat sekali pakai, bukan index SaaS, dan bukan alat rewrite otomatis. Outputnya file yang bisa direview: route, screen, tabel, dan invariant mana yang saling terkait.
+
 Banyak tool kode paham import, caller, dan symbol. Tapi bug produk sering muncul di lapisan lain:
 
 - form mobile berubah, tapi validasi backend tidak ikut
@@ -379,6 +514,19 @@ Banyak tool kode paham import, caller, dan symbol. Tapi bug produk sering muncul
 - aturan pembayaran berubah, tapi reporting, notifikasi, dan migration tertinggal
 
 `feature-map` dibuat untuk lapisan semantik itu.
+
+### Kenapa Developer Mencari Ini
+
+Saat tim mewarisi app lama, masalah tersulit biasanya bukan "cari file". Masalahnya adalah menjawab pertanyaan produk tanpa merusak production:
+
+- Menu dan screen apa saja yang ada?
+- Route mana yang menggerakkan setiap fitur?
+- Button, filter, form, export, dan action apa saja yang tersedia di UI?
+- Auth, middleware, dan permission apa yang melindungi flow?
+- Tabel, model, cast, dan detail schema mana yang harus tetap kompatibel?
+- Bagian mana yang layak jadi kandidat API atau client app baru?
+
+`feature-map` mengubah jawaban itu menjadi file yang bisa direview, bukan sekadar transcript chat sekali pakai.
 
 ### Tersedia Untuk
 
@@ -398,6 +546,7 @@ Plugin Claude dan skill Codex memakai registry `FEATURE-MAP.yaml` yang sama, jad
 - **Mengaudit drift** dengan temuan `GAP`, `DRIFT`, `IMPACT`, `RULE-GAP`, dan `OK`
 - **Menandai rule bisnis yang belum terdokumentasi** dengan cross-check deskripsi test touchpoint terhadap invariant yang sudah ada
 - **Mengimpor dokumen blueprint/FRD/SRS** menjadi draft flow map dengan evidence halaman
+- **Mengekstrak app lama untuk migrasi** menjadi pack read-only berisi route, action UI, hint auth, touchpoint data, ringkasan schema, kandidat API, dan client surface
 - **Mendukung multi-repo flow** melalui registry repo lokal
 - **Mengikuti rantai dampak** lewat field `impacts`
 - **Memakai blast radius call-graph** saat `.code-review-graph/graph.db` tersedia
@@ -415,6 +564,105 @@ Tujuannya sederhana:
 > Saat satu bagian flow bisnis berubah, bagian lain dari flow itu tidak boleh terlupakan.
 
 Plugin ini diarahkan menjadi safety layer bersama untuk engineering berbantuan AI: kecil untuk dipasang di mana saja, eksplisit untuk direview di Git, dan cukup praktis untuk membantu saat edit nyata.
+
+### App Migration Extractor
+
+Mempelajari app lama secara manual itu melelahkan: route ada di satu tempat, menu di tempat lain, validasi di controller, aturan format di helper, dan makna database tersebar di model serta migration. **App Migration Extractor** memberi AI agent peta awal sebelum rewrite, migrasi parsial, pembuatan mobile/desktop, atau pemecahan ke microservice.
+
+```bash
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
+```
+
+Argumen:
+
+- `root`: path app lama atau app target yang mau discan
+- `-o, --output`: folder output untuk migration pack
+- `--profile`: `auto`, `laravel`, `express`, `nestjs`, `nextjs`, `node`, atau `generic`
+- `--module`: filter module opsional; pakai `all` untuk semua module yang terdeteksi
+
+Workflow yang disarankan:
+
+1. Jalankan `extract-app` ke app lama; arahkan output ke luar repo source kalau tidak mau working tree app lama ikut kotor.
+2. Buka `app-migration-extract/index.md` untuk peta ringkas.
+3. Buka `app-migration-extract/index.json` kalau tool lain atau AI agent butuh input terstruktur.
+4. Pilih hanya folder module yang dibutuhkan untuk API baru, UI, mobile, desktop, atau service.
+5. Anggap `risks-and-open-questions.md` sebagai daftar review manual sebelum implementasi.
+
+Command ini scan app target secara read-only dan mengumpulkan hasilnya ke satu folder:
+
+- inventory route dan kandidat batas API
+- screen UI, form, button, filter, dan referensi route
+- hint auth dan middleware
+- petunjuk dependency, helper, dan library
+- ringkasan model, tabel, migration, cast, dan schema
+- client surface untuk web, mobile, desktop, atau frontend baru lain
+- catatan risiko saat analisis statis belum bisa memastikan relasi bisnis
+
+Bentuk output:
+
+```text
+app-migration-extract/
+  index.json
+  index.md
+  discovery/
+    tech-stack.md
+    route-map.md
+    menu-map.md
+  database/
+    schema-summary.md
+    table-map.json
+  modules/
+    <module>/
+      overview.md
+      route-flow.md
+      ui-actions.md
+      forms-filters.md
+      db-touchpoints.md
+      api-candidates.md
+      client-surfaces.md
+      risks-and-open-questions.md
+```
+
+Fitur ini dibuat untuk kerja migrasi yang memang paling menguras waktu developer: monolith lama, stack usang, atau app microservice yang sudah ada dan perlu dijadikan object source untuk API engine atau client experience baru tanpa mengganggu app lama.
+
+Prompt untuk project baru:
+
+```text
+Gunakan app-migration-extract/ sebagai source map. Bangun API dan client baru hanya dari module yang dipilih. Pertahankan nama field, nilai status, format tanggal/currency, asumsi auth, dan kompatibilitas database kecuali extract menandainya sebagai open question.
+```
+
+Limitasi:
+
+- Static scan tidak bisa membuktikan semua route dinamis, runtime menu, policy permission, atau relasi database.
+- Extractor belum membuka koneksi database pada MVP ini.
+- Extractor tidak membuat API baru dan tidak rewrite app lama.
+- Output adalah peta awal migrasi; owner domain tetap perlu review rule bisnis yang kritis.
+
+### Bukti, Bukan Hype
+
+Extractor sengaja dibuktikan lewat smoke test lokal yang bisa diulang, bukan klaim abstrak. Di test suite repo ini, extractor dilindungi test Laravel dan Node/Express. Pada smoke run ke app HRIS Laravel nyata, command menghasilkan migration pack read-only yang valid dengan:
+
+- 32 route terdeteksi
+- 346 file view/client terdeteksi
+- 181 tabel database terdeteksi
+- 161 kandidat module
+- output `index.json` valid
+
+Lihat [BENCHMARK.md](BENCHMARK.md) dan [SMOKE.md](SMOKE.md) untuk alur verifikasi. Angka ini bukan benchmark universal; ini bukti bahwa command berjalan di app non-trivial dan menghasilkan output terstruktur yang bisa diparse tanpa mengedit source app.
+
+### Posisi Tool Ini
+
+Sudah ada tool bagus untuk code search, codebase context, dan dokumentasi AI. `feature-map` sengaja lebih sempit: fokus ke kontinuitas flow bisnis dan discovery migrasi lokal yang bisa direview di Git.
+
+| Kebutuhan | Tool umum | Sudut `feature-map` |
+| --- | --- | --- |
+| Search dan navigasi codebase besar | Platform code search dan codebase context | Memakai file yang ada untuk membuat peta flow bisnis yang fokus untuk task Claude/Codex |
+| Membuat atau menjaga dokumentasi kode | Platform dokumentasi AI | Menjaga invariant flow dan migration pack dekat dengan Git, test, dan evidence source |
+| Modernisasi app lama | Konsultan migrasi, agent refactor, discovery manual | Mulai dari discovery route/UI/auth/data sebelum rewrite menyentuh production code |
+| Memecah monolith atau rebuild client | Dokumen arsitektur dan wawancara tim | Mengekstrak clue route, UI, auth, tabel, dan kandidat API ke satu folder |
+| Mencegah edit AI drift | Code review umum atau memory chat | Menandai mapped flow stale dan audit behavior lintas layer dengan `GAP`, `DRIFT`, `IMPACT`, dan `OK` |
+
+Tujuannya bukan mengalahkan semua platform code understanding. Tujuannya memberi AI coding agent peta perilaku produk yang membosankan, eksplisit, dan bisa dicek sebelum mereka mengubah kode.
 
 ### Contoh Cepat
 
@@ -534,6 +782,7 @@ Command helper yang berguna:
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py validate .
 ~/.codex/skills/feature-map/scripts/feature_map_cli.py quality .
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
 ```
 
 Untuk import blueprint di Codex, pakai CLI yang sama:
@@ -563,6 +812,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.10.3 - Ekstrak Migrasi App
+
+- Menambahkan `feature_map_cli.py extract-app` untuk membuat migration pack read-only dari app lama ke satu folder output.
+- Mendukung `--profile auto` dengan deteksi Laravel dan stack Node umum, plus fallback generic untuk codebase non-PHP.
+- Mengekstrak inventory route, form/action/filter UI, hint dependency, touchpoint model/tabel, ringkasan schema, kandidat API, client surface, dan catatan risiko untuk dikonsumsi agent di project rewrite, mobile, desktop, atau microservice.
+- Scan tetap statis dan read-only: tidak mengedit source dan tidak membuka koneksi database pada MVP ini.
 
 #### v0.10.2 - Penguatan CLI & Pembersihan Dokumen Usang
 

@@ -89,7 +89,7 @@ def test_doctor_reports_install_health(monkeypatch, tmp_path, capsys):
     (hooks / "feature_map_hook.py").write_text("")
     manifest = source_root / ".claude-plugin"
     manifest.mkdir()
-    (manifest / "plugin.json").write_text('{"version": "0.10.2"}')
+    (manifest / "plugin.json").write_text('{"version": "0.10.3"}')
     monkeypatch.setattr(feature_map_cli, "SOURCE_REPO_ROOT", source_root)
     monkeypatch.setattr(feature_map_cli, "REPO_PLUGIN_ROOT", tmp_path / "missing")
     monkeypatch.setattr(feature_map_cli, "CODEX_SKILL_ROOT", tmp_path / "skill")
@@ -105,7 +105,7 @@ def test_doctor_reports_install_health(monkeypatch, tmp_path, capsys):
     assert payload["checks"]["hooks_available"] is True
     assert payload["checks"]["parser_sample"] is True
     assert payload["checks"]["blueprint_sample"] is True
-    assert payload["version"] == "0.10.2"
+    assert payload["version"] == "0.10.3"
 
 
 def test_quality_report_flags_placeholder_dead_and_missing_rules(tmp_path, capsys):
@@ -213,3 +213,158 @@ def test_validate_report_ok_for_supported_schema(tmp_path, capsys):
 
     assert payload["ok"] is True
     assert payload["issues"] == []
+
+
+def test_extract_app_writes_laravel_migration_pack(tmp_path, capsys):
+    (tmp_path / "composer.json").write_text(
+        json.dumps({"require": {"php": "^8.2", "laravel/framework": "^11.0"}})
+    )
+    routes = tmp_path / "routes"
+    routes.mkdir()
+    (routes / "web.php").write_text(
+        "<?php\n"
+        "Route::middleware(['auth'])->group(function () {\n"
+        "    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');\n"
+        "    Route::post('/pos', [PosController::class, 'store'])->name('pos.store');\n"
+        "});\n"
+    )
+    controller = tmp_path / "app" / "Http" / "Controllers"
+    controller.mkdir(parents=True)
+    (controller / "PosController.php").write_text(
+        "<?php\n"
+        "class PosController {\n"
+        "  public function index() { return view('page.pos.index'); }\n"
+        "  public function store(StoreSaleRequest $request) { Sale::create($request->validated()); }\n"
+        "}\n"
+    )
+    model = tmp_path / "app" / "Models"
+    model.mkdir(parents=True)
+    (model / "Sale.php").write_text(
+        "<?php\n"
+        "class Sale extends Model { protected $table = 'sales'; protected $casts = ['sold_at' => 'datetime']; }\n"
+    )
+    migrations = tmp_path / "database" / "migrations"
+    migrations.mkdir(parents=True)
+    (migrations / "2026_01_01_000000_create_sales_table.php").write_text(
+        "<?php\n"
+        "Schema::create('sales', function (Blueprint $table) {\n"
+        "  $table->id();\n"
+        "  $table->string('invoice_no');\n"
+        "  $table->decimal('total', 12, 2);\n"
+        "  $table->dateTime('sold_at');\n"
+        "});\n"
+    )
+    view = tmp_path / "resources" / "views" / "page" / "pos"
+    view.mkdir(parents=True)
+    (view / "index.blade.php").write_text(
+        "<form method=\"GET\" action=\"{{ route('pos.index') }}\">\n"
+        "  <input name=\"search\">\n"
+        "  <select name=\"status\"></select>\n"
+        "</form>\n"
+        "<form method=\"POST\" action=\"{{ route('pos.store') }}\">\n"
+        "  <input name=\"invoice_no\">\n"
+        "  <button type=\"submit\">Save</button>\n"
+        "</form>\n"
+    )
+
+    out = tmp_path / "extract"
+    args = type("Args", (), {
+        "root": str(tmp_path),
+        "output": str(out),
+        "profile": "laravel",
+        "module": "all",
+    })()
+
+    assert feature_map_cli.cmd_extract_app(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is True
+    assert payload["output"] == str(out)
+    assert (out / "index.json").is_file()
+    assert (out / "index.md").is_file()
+    assert (out / "modules" / "pos" / "overview.md").is_file()
+    assert (out / "modules" / "pos" / "ui-actions.md").is_file()
+    assert (out / "database" / "schema-summary.md").is_file()
+
+    data = json.loads((out / "index.json").read_text())
+    pos = data["modules"]["pos"]
+    assert "/pos" in [route["uri"] for route in pos["routes"]]
+    assert "auth" in pos["auth"]
+    assert "search" in pos["ui"]["fields"]
+    assert "status" in pos["ui"]["filters"]
+    assert "sales" in pos["db_tables"]
+    assert data["database"]["tables"]["sales"]["columns"]["total"]["type"] == "decimal"
+
+
+def test_extract_app_supports_non_php_node_routes(tmp_path, capsys):
+    (tmp_path / "package.json").write_text(
+        json.dumps({"dependencies": {"express": "^4.18.0", "zod": "^3.0.0"}})
+    )
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "orders.ts").write_text(
+        "import express from 'express';\n"
+        "const router = express.Router();\n"
+        "router.get('/orders', listOrders);\n"
+        "router.post('/orders/:id/approve', approveOrder);\n"
+    )
+    (src / "OrdersPage.tsx").write_text(
+        "<form><input name=\"search\" /><button>Approve</button></form>"
+    )
+    out = tmp_path / "extract"
+    args = type("Args", (), {
+        "root": str(tmp_path),
+        "output": str(out),
+        "profile": "auto",
+        "module": "all",
+    })()
+
+    assert feature_map_cli.cmd_extract_app(args) == 0
+    payload = json.loads(capsys.readouterr().out)
+    data = json.loads((out / "index.json").read_text())
+
+    assert payload["ok"] is True
+    assert data["profile"] == "express"
+    assert "orders" in data["modules"]
+    assert "/orders" in [route["uri"] for route in data["modules"]["orders"]["routes"]]
+    assert "search" in data["modules"]["orders"]["ui"]["fields"]
+
+
+def test_extract_app_laravel_does_not_leak_group_middleware_or_treat_controllers_as_views(tmp_path, capsys):
+    (tmp_path / "composer.json").write_text(
+        json.dumps({"require": {"laravel/framework": "^11.0"}})
+    )
+    routes = tmp_path / "routes"
+    routes.mkdir()
+    (routes / "web.php").write_text(
+        "<?php\n"
+        "Route::middleware(['auth'])->group(function () {\n"
+        "    Route::get('/private', [PrivateController::class, 'index'])->name('private.index');\n"
+        "});\n"
+        "Route::get('/public', [PublicController::class, 'index'])->name('public.index');\n"
+    )
+    controller = tmp_path / "app" / "Http" / "Controllers"
+    controller.mkdir(parents=True)
+    (controller / "PublicController.php").write_text(
+        "<?php\n"
+        "class PublicController { public function index() { return '<input name=\"not_a_view\">'; } }\n"
+    )
+    view = tmp_path / "resources" / "views" / "page" / "private"
+    view.mkdir(parents=True)
+    (view / "index.blade.php").write_text("<input name=\"search\">")
+
+    out = tmp_path / "extract"
+    args = type("Args", (), {
+        "root": str(tmp_path),
+        "output": str(out),
+        "profile": "laravel",
+        "module": "all",
+    })()
+
+    assert feature_map_cli.cmd_extract_app(args) == 0
+    data = json.loads((out / "index.json").read_text())
+    public_route = next(route for route in data["routes"] if route["uri"] == "/public")
+
+    assert public_route["middleware"] == []
+    assert all("app/Http/Controllers/PublicController.php" != view["path"] for view in data["views"])
+    assert "not_a_view" not in data["modules"]["public"]["ui"]["fields"]

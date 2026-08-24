@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,7 @@ SUPPORTED_ROLES = {
     "event-consumer",
 }
 LIST_FIELDS = ("touchpoints", "invariants", "impacts", "evidence", "history")
+FILTER_FIELD_NAMES = {"q", "query", "search", "keyword", "status", "from", "to", "date", "start_date", "end_date"}
 
 
 def latest_cache_root() -> Path | None:
@@ -291,6 +293,322 @@ def _repo_files(root: Path) -> list[str]:
     return sorted(result)
 
 
+def _read_json(path: Path) -> dict:
+    if not path.is_file():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def _slug(value: str) -> str:
+    value = re.sub(r"([a-z0-9])([A-Z])", r"\1-\2", value)
+    value = re.sub(r"[^a-zA-Z0-9]+", "-", value).strip("-").lower()
+    return value or "app"
+
+
+def _module_from_route(uri: str, name: str = "") -> str:
+    if name:
+        return _slug(name.split(".")[0])
+    parts = [p for p in uri.strip("/").split("/") if p and not p.startswith("{")]
+    return _slug(parts[0] if parts else "home")
+
+
+def _detect_profile(root: Path, requested: str) -> str:
+    if requested != "auto":
+        return requested
+    if (root / "artisan").is_file() or (root / "composer.json").is_file():
+        composer = _read_json(root / "composer.json")
+        if "laravel/framework" in (composer.get("require") or {}):
+            return "laravel"
+    if (root / "package.json").is_file():
+        package = _read_json(root / "package.json")
+        deps = {**(package.get("dependencies") or {}), **(package.get("devDependencies") or {})}
+        if "next" in deps:
+            return "nextjs"
+        if "@nestjs/core" in deps:
+            return "nestjs"
+        if "express" in deps:
+            return "express"
+        return "node"
+    return "generic"
+
+
+def _extract_routes(root: Path) -> list[dict]:
+    routes = []
+    middleware_stack: list[list[str]] = []
+    for path in sorted((root / "routes").glob("*.php")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for line in text.splitlines():
+            stripped = line.strip()
+            closes = stripped.count("}")
+            if closes:
+                middleware_stack = middleware_stack[:-closes] or []
+            mw = re.search(r"Route::middleware\((.*?)\)", line)
+            if mw:
+                middleware_stack.append(re.findall(r"['\"]([^'\"]+)['\"]", mw.group(1)))
+            route = re.search(r"Route::(get|post|put|patch|delete|resource)\(['\"]([^'\"]+)['\"](.*)", line)
+            if not route:
+                continue
+            tail = route.group(3)
+            name = ""
+            found_name = re.search(r"->name\(['\"]([^'\"]+)['\"]\)", tail)
+            if found_name:
+                name = found_name.group(1)
+            controller = ""
+            found_controller = re.search(r"\[([A-Za-z0-9_\\\\]+)::class,\s*['\"]([^'\"]+)['\"]\]", tail)
+            if found_controller:
+                controller = f"{found_controller.group(1)}@{found_controller.group(2)}"
+            route_mw = re.findall(r"->middleware\((.*?)\)", tail)
+            middleware = [mw for stack in middleware_stack for mw in stack]
+            for raw in route_mw:
+                middleware.extend(re.findall(r"['\"]([^'\"]+)['\"]", raw))
+            routes.append({
+                "method": route.group(1).upper(),
+                "uri": route.group(2),
+                "name": name,
+                "controller": controller,
+                "middleware": sorted(set(middleware)),
+                "module": _module_from_route(route.group(2), name),
+                "source": str(path.relative_to(root)),
+            })
+    return routes
+
+
+def _extract_generic_routes(root: Path) -> list[dict]:
+    routes = []
+    patterns = (
+        r"\b(?:router|app)\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]",
+        r"@(Get|Post|Put|Patch|Delete)\(['\"]([^'\"]*)['\"]\)",
+    )
+    for rel in _repo_files(root):
+        if not rel.endswith((".js", ".jsx", ".ts", ".tsx", ".py", ".rb", ".go", ".java", ".cs")):
+            continue
+        path = root / rel
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for pattern in patterns:
+            for found in re.finditer(pattern, text):
+                method = found.group(1).upper()
+                uri = found.group(2) or "/"
+                routes.append({
+                    "method": method,
+                    "uri": uri,
+                    "name": "",
+                    "controller": "",
+                    "middleware": [],
+                    "module": _module_from_route(uri),
+                    "source": rel,
+                })
+    return routes
+
+
+def _extract_views(root: Path, profile: str = "generic") -> list[dict]:
+    views = []
+    candidates = []
+    bases = (root / "resources" / "views",) if profile == "laravel" else (
+        root / "resources" / "views", root / "src", root / "app", root / "pages", root / "views"
+    )
+    for base in bases:
+        if base.is_dir():
+            candidates.extend(base.rglob("*"))
+    for path in sorted(p for p in candidates if p.suffix in {".php", ".html", ".vue", ".jsx", ".tsx"} or p.name.endswith(".blade.php")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        fields = sorted(set(re.findall(r"\bname=['\"]([^'\"]+)['\"]", text)))
+        route_refs = sorted(set(re.findall(r"route\(['\"]([^'\"]+)['\"]", text) + re.findall(r"\b(?:href|to)=['\"]([^'\"]+)['\"]", text)))
+        buttons = sorted(set(re.findall(r"<button[^>]*>(.*?)</button>", text, re.I | re.S)))
+        clean_buttons = [re.sub(r"<[^>]+>", "", b).strip() for b in buttons if re.sub(r"<[^>]+>", "", b).strip()]
+        rel = path.relative_to(root)
+        parts = rel.parts
+        module = "ui"
+        if len(parts) >= 5 and parts[:3] == ("resources", "views", "page"):
+            module = _slug(parts[3])
+        elif route_refs:
+            module = _slug(route_refs[0].split(".")[0])
+        elif path.stem:
+            module = _slug(re.sub(r"(Page|View|Screen|Component)$", "", path.stem))
+        views.append({
+            "path": str(rel),
+            "module": module,
+            "fields": fields,
+            "filters": [f for f in fields if f in FILTER_FIELD_NAMES],
+            "route_refs": route_refs,
+            "buttons": clean_buttons,
+            "forms": len(re.findall(r"<form\b", text, re.I)),
+        })
+    return views
+
+
+def _extract_database(root: Path) -> dict:
+    tables = {}
+    migration_dir = root / "database" / "migrations"
+    for path in sorted(migration_dir.glob("*.php")) if migration_dir.is_dir() else []:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        found = re.search(r"Schema::create\(['\"]([^'\"]+)['\"]", text)
+        if not found:
+            continue
+        table = found.group(1)
+        columns = {}
+        for col in re.finditer(r"\$table->([A-Za-z0-9_]+)\(['\"]([^'\"]+)['\"]", text):
+            columns[col.group(2)] = {"type": col.group(1)}
+        if "$table->id()" in text:
+            columns.setdefault("id", {"type": "id"})
+        tables[table] = {"source": str(path.relative_to(root)), "columns": columns}
+    return {"tables": tables}
+
+
+def _extract_models(root: Path) -> dict:
+    models = {}
+    model_dir = root / "app" / "Models"
+    for path in sorted(model_dir.glob("*.php")) if model_dir.is_dir() else []:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        table = re.search(r"protected\s+\$table\s*=\s*['\"]([^'\"]+)['\"]", text)
+        casts = re.findall(r"['\"]([^'\"]+)['\"]\s*=>\s*['\"]([^'\"]+)['\"]", text)
+        models[path.stem] = {
+            "source": str(path.relative_to(root)),
+            "table": table.group(1) if table else _slug(path.stem) + "s",
+            "casts": dict(casts),
+            "soft_deletes": "SoftDeletes" in text,
+        }
+    return models
+
+
+def _extract_controller_model_usage(root: Path) -> dict[str, list[str]]:
+    usage = {}
+    base = root / "app" / "Http" / "Controllers"
+    for path in sorted(base.rglob("*.php")) if base.is_dir() else []:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        models = sorted(set(re.findall(r"\b([A-Z][A-Za-z0-9_]*)::(?:query|create|where|find|with|updateOrCreate)\b", text)))
+        usage[path.stem] = models
+    return usage
+
+
+def _extract_dependencies(root: Path) -> dict:
+    composer = _read_json(root / "composer.json")
+    package = _read_json(root / "package.json")
+    return {
+        "composer": sorted((composer.get("require") or {}).keys()),
+        "composer_dev": sorted((composer.get("require-dev") or {}).keys()),
+        "npm": sorted((package.get("dependencies") or {}).keys()),
+        "npm_dev": sorted((package.get("devDependencies") or {}).keys()),
+    }
+
+
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _lines(title: str, items: list[str]) -> str:
+    body = "\n".join(f"- {item}" for item in items) if items else "- Not detected"
+    return f"# {title}\n\n{body}\n"
+
+
+def cmd_extract_app(args: argparse.Namespace) -> int:
+    root = Path(args.root).resolve()
+    if not root.is_dir():
+        print(json.dumps({"ok": False, "error": f"app root not found: {root}"}, indent=2))
+        return 1
+    profile = _detect_profile(root, args.profile)
+
+    out = Path(args.output).resolve()
+    deps = _extract_dependencies(root)
+    routes = _extract_routes(root) if profile == "laravel" else _extract_generic_routes(root)
+    views = _extract_views(root, profile)
+    database = _extract_database(root)
+    models = _extract_models(root)
+    controller_models = _extract_controller_model_usage(root)
+
+    modules: dict[str, dict] = {}
+    for route in routes:
+        modules.setdefault(route["module"], {
+            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": []},
+            "db_tables": [], "risks": [],
+        })["routes"].append(route)
+    for view in views:
+        module = modules.setdefault(view["module"], {
+            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": []},
+            "db_tables": [], "risks": [],
+        })
+        module["views"].append(view["path"])
+        for key in ("fields", "filters", "buttons", "route_refs"):
+            module["ui"][key] = sorted(set(module["ui"][key] + view[key]))
+    for name, module in modules.items():
+        auth = sorted({mw for route in module["routes"] for mw in route["middleware"]})
+        module["auth"] = auth
+        for model in models.values():
+            guessed = model["table"].replace("_", "-").rstrip("s")
+            if guessed in name or name in guessed:
+                module["db_tables"].append(model["table"])
+        for route in module["routes"]:
+            controller = route.get("controller", "").split("@")[0]
+            for model_name in controller_models.get(controller, []):
+                if model_name in models:
+                    module["db_tables"].append(models[model_name]["table"])
+        module["db_tables"] = sorted(set(module["db_tables"]))
+        if not module["db_tables"]:
+            module["risks"].append("DB table relation is heuristic; verify controller queries and model usage.")
+
+    if args.module != "all":
+        modules = {k: v for k, v in modules.items() if k == args.module}
+
+    payload = {
+        "source_root": str(root),
+        "profile": profile,
+        "confidence": "static-scan",
+        "dependencies": deps,
+        "routes": routes,
+        "views": views,
+        "models": models,
+        "controller_models": controller_models,
+        "database": database,
+        "modules": modules,
+    }
+
+    _write(out / "index.json", json.dumps(payload, indent=2, ensure_ascii=False))
+    _write(out / "index.md", _lines("App Migration Extract", [
+        f"Source: {root}",
+        f"Profile: {profile}",
+        f"Modules: {len(modules)}",
+        "Scan mode: static read-only; no database connection was opened.",
+    ]))
+    _write(out / "discovery" / "tech-stack.md", _lines("Tech Stack", deps["composer"] + deps["npm"]))
+    _write(out / "discovery" / "route-map.md", _lines("Route Map", [
+        f"{r['method']} {r['uri']} -> {r['name'] or r['controller'] or 'unnamed'} [{r['source']}]" for r in routes
+    ]))
+    _write(out / "discovery" / "menu-map.md", _lines("Menu Map", [
+        f"{v['module']}: {v['path']}" for v in views
+    ]))
+    _write(out / "database" / "schema-summary.md", _lines("Schema Summary", [
+        f"{name}: {', '.join(table['columns'].keys()) or 'columns not detected'}"
+        for name, table in database["tables"].items()
+    ]))
+    _write(out / "database" / "table-map.json", json.dumps(database, indent=2, ensure_ascii=False))
+
+    for name, module in sorted(modules.items()):
+        base = out / "modules" / name
+        _write(base / "overview.md", _lines(f"Module {name}", [
+            f"Routes: {len(module['routes'])}",
+            f"Views: {len(module['views'])}",
+            f"Auth/middleware: {', '.join(module['auth']) or 'not detected'}",
+            f"DB tables: {', '.join(module['db_tables']) or 'needs verification'}",
+        ]))
+        _write(base / "route-flow.md", _lines("Route Flow", [
+            f"{r['method']} {r['uri']} -> {r['name'] or r['controller'] or 'unnamed'}" for r in module["routes"]
+        ]))
+        _write(base / "ui-actions.md", _lines("UI Actions", module["ui"]["buttons"] + module["ui"]["route_refs"]))
+        _write(base / "forms-filters.md", _lines("Forms And Filters", module["ui"]["fields"]))
+        _write(base / "db-touchpoints.md", _lines("DB Touchpoints", module["db_tables"]))
+        _write(base / "api-candidates.md", _lines("API Candidates", [
+            f"{r['method']} {r['uri']} from {r['name'] or r['controller'] or 'unnamed'}" for r in module["routes"]
+        ]))
+        _write(base / "client-surfaces.md", _lines("Client Surfaces", module["views"]))
+        _write(base / "risks-and-open-questions.md", _lines("Risks And Open Questions", module["risks"]))
+
+    print(json.dumps({"ok": True, "output": str(out), "modules": len(modules)}, indent=2, ensure_ascii=False))
+    return 0
+
+
 def cmd_quality(args: argparse.Namespace) -> int:
     try:
         root = git_root(args.root)
@@ -446,6 +764,13 @@ def build_parser() -> argparse.ArgumentParser:
     validate = sub.add_parser("validate", help="Validate FEATURE-MAP.yaml schema shape.")
     validate.add_argument("root", nargs="?", default=None)
     validate.set_defaults(func=cmd_validate)
+
+    extract_app = sub.add_parser("extract-app", help="Extract a read-only app migration pack from an existing codebase.")
+    extract_app.add_argument("root")
+    extract_app.add_argument("-o", "--output", required=True)
+    extract_app.add_argument("--profile", default="auto", choices=["auto", "laravel", "express", "nestjs", "nextjs", "node", "generic"])
+    extract_app.add_argument("--module", default="all")
+    extract_app.set_defaults(func=cmd_extract_app)
 
     root = sub.add_parser("plugin-root", help="Print resolved plugin root.")
     root.set_defaults(func=lambda _args: print(plugin_root()) or 0)
