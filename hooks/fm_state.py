@@ -8,6 +8,8 @@ import os
 import tempfile
 from datetime import datetime, timezone
 
+import fm_io
+
 DEFAULT = {"last_synced_sha": None, "flows": {}}
 
 
@@ -28,28 +30,11 @@ def load_state(root):
         return {"last_synced_sha": None, "flows": {}}
 
 
-def _ensure_gitignore(root):
-    gi_path = os.path.join(root, ".gitignore")
-    try:
-        existing = ""
-        if os.path.isfile(gi_path):
-            with open(gi_path, encoding="utf-8") as f:
-                existing = f.read()
-        if ".feature-map/" in existing:
-            return
-        with open(gi_path, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            f.write(".feature-map/\n")
-    except Exception:
-        pass
-
-
 def save_state(root, state):
     try:
         d = os.path.join(root, ".feature-map")
         os.makedirs(d, exist_ok=True)
-        _ensure_gitignore(root)
+        fm_io.append_gitignore(root, ".feature-map/")
         fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(state, f, indent=2)

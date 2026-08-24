@@ -1,5 +1,6 @@
 import os
 import sys
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "hooks"))
 import fm_blueprint
@@ -33,3 +34,10 @@ def test_generate_feature_map_from_text_file(tmp_path):
     assert "evidence:" in rendered
     assert 'source: "docs/blueprint.txt"' in rendered
     assert 'path: "app/**/payroll/**"' in rendered
+
+
+def test_read_pages_missing_document_fails_with_clear_message(tmp_path):
+    missing = tmp_path / "missing.txt"
+
+    with pytest.raises(SystemExit, match="Document not found"):
+        fm_blueprint.read_pages(str(missing))

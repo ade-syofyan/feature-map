@@ -11,6 +11,8 @@ import os
 import re
 import tempfile
 
+import fm_io
+
 _UNSAFE_CHARS = re.compile(r"[^A-Za-z0-9_-]")
 
 
@@ -22,28 +24,11 @@ def pending_dir(root):
     return os.path.join(root, ".claude", "feature-map-pending")
 
 
-def _ensure_gitignore(root):
-    gi_path = os.path.join(root, ".gitignore")
-    try:
-        existing = ""
-        if os.path.isfile(gi_path):
-            with open(gi_path, encoding="utf-8") as f:
-                existing = f.read()
-        if ".claude/feature-map-pending/" in existing:
-            return
-        with open(gi_path, "a", encoding="utf-8") as f:
-            if existing and not existing.endswith("\n"):
-                f.write("\n")
-            f.write(".claude/feature-map-pending/\n")
-    except Exception:
-        pass
-
-
 def write_pending(root, flow_id, entry):
     try:
         d = pending_dir(root)
         os.makedirs(d, exist_ok=True)
-        _ensure_gitignore(root)
+        fm_io.append_gitignore(root, ".claude/feature-map-pending/")
         safe_id = sanitize_flow_id(flow_id)
         fd, tmp = tempfile.mkstemp(dir=d, suffix=".tmp")
         with os.fdopen(fd, "w", encoding="utf-8") as f:

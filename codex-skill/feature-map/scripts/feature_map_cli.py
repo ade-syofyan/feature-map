@@ -13,6 +13,7 @@ from pathlib import Path
 
 REPO_PLUGIN_ROOT = Path("/Users/adesyofyan/Documents/MApp/claude-plugins")
 CODEX_SKILL_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_REPO_ROOT = CODEX_SKILL_ROOT.parent.parent
 
 
 def latest_cache_root() -> Path | None:
@@ -26,14 +27,18 @@ def latest_cache_root() -> Path | None:
 
 
 def plugin_root() -> Path:
+    def usable(root: Path) -> bool:
+        return (root / "hooks" / "feature_map_hook.py").is_file()
+
     for raw in (os.environ.get("FEATURE_MAP_PLUGIN_ROOT"),
                 os.environ.get("CLAUDE_PLUGIN_ROOT")):
-        if raw and Path(raw).is_dir():
+        if raw and usable(Path(raw)):
             return Path(raw)
-    if REPO_PLUGIN_ROOT.is_dir():
-        return REPO_PLUGIN_ROOT
+    for candidate in (REPO_PLUGIN_ROOT, SOURCE_REPO_ROOT):
+        if usable(candidate):
+            return candidate
     cached = latest_cache_root()
-    if cached:
+    if cached and usable(cached):
         return cached
     return CODEX_SKILL_ROOT
 
@@ -161,19 +166,15 @@ def cmd_rules_check(args: argparse.Namespace) -> int:
     add_plugin_hooks_to_path()
     import fm_rules_check
 
-    fm_path = None
-    from feature_map_hook import find_feature_map, parse_feature_map
-    fm_path = find_feature_map(str(root))
-    if not fm_path:
+    flows = read_flows(root)
+    if not (root / "FEATURE-MAP.yaml").is_file():
         print(json.dumps({"error": "FEATURE-MAP.yaml not found"}))
         return 1
-    with open(fm_path, encoding="utf-8") as f:
-        flows = parse_feature_map(f.read())
     if args.flow not in flows:
         print(json.dumps({"error": f"flow '{args.flow}' not found",
                            "available_flows": sorted(flows.keys())}))
         return 1
-    result = fm_rules_check.check_flow(os.path.dirname(fm_path), args.flow, flows[args.flow])
+    result = fm_rules_check.check_flow(str(root), args.flow, flows[args.flow])
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
