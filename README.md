@@ -163,6 +163,33 @@ Prompt it into the next project:
 Use app-migration-extract/ as the source map. Build the new API and client only from the selected modules. Preserve field names, status values, date/currency formats, auth assumptions, and database compatibility unless the extract marks them as open questions.
 ```
 
+Prompt examples for AI agents:
+
+```text
+Use feature-map App Migration Extractor to scan this legacy app in read-only mode.
+
+Run:
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
+
+After the scan, read app-migration-extract/index.md and index.json. Use the result to map routes, UI flows, auth/middleware, table/schema touchpoints, API candidates, client surfaces, and risks/open questions.
+
+Do not modify the legacy app source. The output is only for migration, rewrite, or a new project.
+```
+
+```text
+Use app-migration-extract/ as the source map for a new project. I want to rebuild only selected features from the old app.
+
+Pick the relevant modules, then propose the new API/service/client plan from the extracted routes, UI actions, auth assumptions, DB touchpoints, and risks.
+
+Preserve field names, status values, data formats, and database compatibility unless the extract marks them as open questions.
+```
+
+```text
+Use feature-map App Migration Extractor for /path/to/legacy-app. Scan read-only and write the output to /path/to/app-migration-extract.
+
+After that, summarize the detected modules and recommend which modules are safest to migrate first.
+```
+
 Limitations:
 
 - Static scan cannot prove every dynamic route, runtime menu, permission policy, or database relationship.
@@ -629,6 +656,33 @@ Prompt untuk project baru:
 
 ```text
 Gunakan app-migration-extract/ sebagai source map. Bangun API dan client baru hanya dari module yang dipilih. Pertahankan nama field, nilai status, format tanggal/currency, asumsi auth, dan kompatibilitas database kecuali extract menandainya sebagai open question.
+```
+
+Contoh prompt untuk AI agent:
+
+```text
+Use feature-map App Migration Extractor untuk scan app lama ini secara read-only.
+
+Jalankan:
+~/.codex/skills/feature-map/scripts/feature_map_cli.py extract-app /path/to/legacy-app -o app-migration-extract --profile auto
+
+Setelah selesai, baca app-migration-extract/index.md dan index.json. Pakai hasilnya untuk mapping route, UI flow, auth/middleware, table/schema, API candidates, client surfaces, dan risks/open questions.
+
+Jangan ubah source app lama. Output hanya untuk bahan migrasi/rewrite/project baru.
+```
+
+```text
+Gunakan app-migration-extract/ sebagai source map untuk project baru. Saya mau bikin ulang hanya sebagian fitur dari app lama.
+
+Pilih module yang relevan, lalu susun rencana API/service/client baru berdasarkan route, UI actions, auth, DB touchpoints, dan risks yang ada.
+
+Pertahankan nama field, status value, format data, dan kompatibilitas database kecuali ada open question.
+```
+
+```text
+Use feature-map App Migration Extractor untuk repo /path/to/app-lama. Scan read-only, output ke /path/to/app-migration-extract.
+
+Setelah itu rangkum module apa saja yang ditemukan dan rekomendasikan module mana yang paling aman dimigrasikan dulu.
 ```
 
 Limitasi:
