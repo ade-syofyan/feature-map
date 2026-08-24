@@ -262,6 +262,78 @@ def cmd_doctor(_args: argparse.Namespace) -> int:
     return 0 if payload["ok"] else 1
 
 
+def _repo_files(root: Path) -> list[str]:
+    result = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [
+            d for d in dirnames
+            if d not in {".git", "node_modules", "vendor", ".venv", "__pycache__"}
+        ]
+        for filename in filenames:
+            result.append(os.path.relpath(os.path.join(dirpath, filename), root))
+    return sorted(result)
+
+
+def cmd_quality(args: argparse.Namespace) -> int:
+    try:
+        root = git_root(args.root)
+    except SystemExit:
+        root = Path(args.root or os.getcwd()).resolve()
+    add_plugin_hooks_to_path()
+    from feature_map_hook import match
+
+    if not (root / "FEATURE-MAP.yaml").is_file():
+        print(json.dumps({
+            "ok": False,
+            "repo_root": str(root),
+            "error": "FEATURE-MAP.yaml not found",
+        }, indent=2, ensure_ascii=False))
+        return 1
+
+    flows = read_flows(root)
+    repo_files = _repo_files(root)
+    issues = []
+    summary = {
+        "draft_flows": 0,
+        "placeholder_touchpoints": 0,
+        "dead_touchpoints": 0,
+        "missing_invariants": 0,
+        "missing_touchpoints": 0,
+    }
+    for name, flow in sorted(flows.items()):
+        if flow.get("confidence") == "draft":
+            summary["draft_flows"] += 1
+            issues.append({"type": "draft-flow", "flow": name})
+        if not flow.get("invariants"):
+            summary["missing_invariants"] += 1
+            issues.append({"type": "missing-invariants", "flow": name})
+        touchpoints = flow.get("touchpoints", [])
+        if not touchpoints:
+            summary["missing_touchpoints"] += 1
+            issues.append({"type": "missing-touchpoints", "flow": name})
+        for tp in touchpoints:
+            path = tp.get("path", "")
+            note = tp.get("note", "")
+            if not path or "repo" in tp:
+                continue
+            if "placeholder" in f"{path} {note}".lower():
+                summary["placeholder_touchpoints"] += 1
+                issues.append({"type": "placeholder-touchpoint", "flow": name, "path": path})
+            if not any(match(rel, path) for rel in repo_files):
+                summary["dead_touchpoints"] += 1
+                issues.append({"type": "dead-touchpoint", "flow": name, "path": path})
+
+    payload = {
+        "ok": not issues,
+        "repo_root": str(root),
+        "flows": len(flows),
+        "summary": summary,
+        "issues": issues,
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0 if payload["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -304,6 +376,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor = sub.add_parser("doctor", help="Run a local feature-map install smoke test.")
     doctor.set_defaults(func=cmd_doctor)
+
+    quality = sub.add_parser("quality", help="Report FEATURE-MAP.yaml quality issues.")
+    quality.add_argument("root", nargs="?", default=None)
+    quality.set_defaults(func=cmd_quality)
 
     root = sub.add_parser("plugin-root", help="Print resolved plugin root.")
     root.set_defaults(func=lambda _args: print(plugin_root()) or 0)

@@ -51,10 +51,12 @@ Use this only when the local HRIS checkout exists:
 ```bash
 python3 codex-skill/feature-map/scripts/feature_map_cli.py status /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
 python3 codex-skill/feature-map/scripts/feature_map_cli.py pending-status /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
+python3 codex-skill/feature-map/scripts/feature_map_cli.py quality /Users/adesyofyan/Documents/MApp/web/HRIS-Intercom
 ```
 
 Expected:
 
 - `status` parses `FEATURE-MAP.yaml` and prints flow counts.
 - `pending-status` exits 0.
+- `quality` exits 0 when the map has no draft flows, placeholder/dead local touchpoints, or missing invariants.
 - Do not edit HRIS business logic during smoke. If you stage a temporary hook test, revert it immediately and verify the HRIS worktree is clean.
