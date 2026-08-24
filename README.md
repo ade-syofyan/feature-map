@@ -166,11 +166,10 @@ Without `FEATURE-MAP.yaml`, the hooks are a no-op and safe to keep installed glo
 ```bash
 git clone https://github.com/ade-syofyan/feature-map.git
 cd feature-map
-rsync -a --delete codex-skill/feature-map/ ~/.codex/skills/feature-map/
-chmod +x ~/.codex/skills/feature-map/scripts/feature_map_cli.py
+make install-codex
 ```
 
-Keep the cloned repo available, or set `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`, because the Codex CLI loads shared hook modules from the plugin source. Re-run the `rsync` command whenever you `git pull` an update — Codex reads skill instructions from `~/.codex/skills/feature-map/`, while the helper CLI resolves hook code from the clone, an installed Claude cache, or `FEATURE_MAP_PLUGIN_ROOT`.
+Keep the cloned repo available because the Codex CLI loads shared hook modules from the plugin source. `make install-codex` writes `plugin-root.txt` into the installed skill so the helper CLI resolves back to this checkout; re-run it whenever you `git pull` an update. You can also override the source path with `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`.
 
 Verify the install:
 
@@ -506,11 +505,10 @@ Tanpa `FEATURE-MAP.yaml`, hook-nya tidak melakukan apa-apa, jadi aman dipasang g
 ```bash
 git clone https://github.com/ade-syofyan/feature-map.git
 cd feature-map
-rsync -a --delete codex-skill/feature-map/ ~/.codex/skills/feature-map/
-chmod +x ~/.codex/skills/feature-map/scripts/feature_map_cli.py
+make install-codex
 ```
 
-Biarkan repo hasil clone tetap ada, atau set `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`, karena CLI Codex memuat modul hook bersama dari source plugin. Jalankan ulang command `rsync` di atas setiap kali kamu `git pull` update terbaru — Codex membaca instruksi skill dari `~/.codex/skills/feature-map/`, sementara helper CLI resolve kode hook dari clone, cache Claude yang terpasang, atau `FEATURE_MAP_PLUGIN_ROOT`.
+Biarkan repo hasil clone tetap ada karena CLI Codex memuat modul hook bersama dari source plugin. `make install-codex` menulis `plugin-root.txt` ke skill yang terpasang supaya helper CLI resolve balik ke checkout ini; jalankan ulang setiap kali kamu `git pull` update terbaru. Kamu juga bisa override source path dengan `FEATURE_MAP_PLUGIN_ROOT=/path/to/feature-map`.
 
 Verifikasi install:
 

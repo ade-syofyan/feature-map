@@ -5,6 +5,10 @@ Use this before publishing or after changing hook/CLI behavior.
 ## Codex
 
 ```bash
+tmp=$(mktemp -d)
+make install-codex CODEX_SKILL_DIR="$tmp"
+"$tmp/scripts/feature_map_cli.py" doctor
+make smoke
 python3 codex-skill/feature-map/scripts/feature_map_cli.py plugin-root
 python3 codex-skill/feature-map/scripts/feature_map_cli.py doctor
 python3 codex-skill/feature-map/scripts/feature_map_cli.py status .
@@ -14,6 +18,8 @@ Expected:
 
 - `plugin-root` points to a directory containing `hooks/feature_map_hook.py`.
 - `doctor` returns JSON with `"ok": true`.
+- Temporary `make install-codex` writes `plugin-root.txt` and the installed CLI doctor resolves this checkout.
+- `make smoke` runs `doctor` and a tiny blueprint import without leaving a draft file in the repo.
 - `status` exits 0. In this plugin repo it may show no flows because the repo itself does not need a `FEATURE-MAP.yaml`.
 
 ## Blueprint Import
