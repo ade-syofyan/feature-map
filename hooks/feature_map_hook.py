@@ -116,6 +116,43 @@ def strip_comment(line):
     return line.rstrip()
 
 
+def _flow_defaults(flow):
+    data = dict(flow or {})
+    data.setdefault("description", "")
+    data.setdefault("policy", "")
+    data.setdefault("touchpoints", [])
+    data.setdefault("invariants", [])
+    data.setdefault("impacts", [])
+    data.setdefault("evidence", [])
+    data.setdefault("history", [])
+    data.setdefault("confidence", "")
+    data.setdefault("mechanics_doc", "")
+    data.setdefault("last_reviewed", "")
+    for key in ("evidence", "history", "touchpoints"):
+        data[key] = [
+            {k: str(v) for k, v in item.items()} if isinstance(item, dict) else item
+            for item in data.get(key, [])
+        ]
+    data["invariants"] = [str(item) for item in data.get("invariants", [])]
+    data["impacts"] = [str(item) for item in data.get("impacts", [])]
+    return data
+
+
+def _parse_feature_map_with_pyyaml(text):
+    try:
+        import yaml
+    except Exception:
+        return None
+    try:
+        doc = yaml.safe_load(text) or {}
+        flows = doc.get("flows", {})
+        if not isinstance(flows, dict):
+            return {}
+        return {name: _flow_defaults(flow) for name, flow in flows.items()}
+    except Exception:
+        return None
+
+
 def parse_feature_map(text):
     """Parse subset YAML sesuai skema FEATURE-MAP.yaml.
 
@@ -136,6 +173,10 @@ def parse_feature_map(text):
           invariants:
             - "<teks>"
     """
+    parsed = _parse_feature_map_with_pyyaml(text)
+    if parsed is not None:
+        return parsed
+
     flows = {}
     current_flow = None
     current_list = None  # "touchpoints" | "invariants"
@@ -158,11 +199,7 @@ def parse_feature_map(text):
 
         if indent == 2 and stripped.endswith(":"):
             current_flow = stripped[:-1].strip()
-            flows[current_flow] = {"description": "", "policy": "",
-                                   "touchpoints": [], "invariants": [],
-                                   "impacts": [], "evidence": [], "history": [],
-                                   "confidence": "", "mechanics_doc": "",
-                                   "last_reviewed": ""}
+            flows[current_flow] = _flow_defaults({})
             current_list = None
             continue
         if current_flow is None:
@@ -211,7 +248,7 @@ def unquote(val):
     val = val.strip()
     if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
         val = val[1:-1]
-    return val
+    return val.replace('\\"', '"').replace("\\'", "'").replace("\\\\", "\\")
 
 
 def find_feature_map(start_dir):
