@@ -197,6 +197,14 @@ Limitations:
 - The extractor does not generate new API code or rewrite the old app.
 - The output is a migration starting map; domain owners still need to review critical business rules.
 
+Troubleshooting:
+
+- Empty output: check that `root` points to the app root, not a subfolder.
+- Wrong stack detected: pass `--profile laravel`, `--profile express`, `--profile nextjs`, `--profile nestjs`, `--profile node`, or `--profile generic` instead of `auto`.
+- Too many modules: inspect `index.md`, then rerun with `--module <module-name>` for the module you want to hand to the next agent.
+- Output made the old app repo dirty: write `-o` to a folder outside the legacy repo.
+- Codex command missing: from this repo, run `make install-codex`, then verify with `~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor`.
+
 ### Proof, Not Hype
 
 The extractor is intentionally benchmarked as a local, reproducible smoke test instead of a vague claim. On this repo's fixture suite it is covered by Laravel and Node/Express tests. On a real Laravel HRIS app smoke run, it produced a valid read-only migration pack with:
@@ -691,6 +699,14 @@ Limitasi:
 - Extractor belum membuka koneksi database pada MVP ini.
 - Extractor tidak membuat API baru dan tidak rewrite app lama.
 - Output adalah peta awal migrasi; owner domain tetap perlu review rule bisnis yang kritis.
+
+Troubleshooting:
+
+- Output kosong: pastikan `root` menunjuk ke root app, bukan subfolder.
+- Stack salah terdeteksi: pakai `--profile laravel`, `--profile express`, `--profile nextjs`, `--profile nestjs`, `--profile node`, atau `--profile generic`, bukan `auto`.
+- Module terlalu banyak: cek `index.md`, lalu jalankan ulang dengan `--module <nama-module>` untuk module yang mau diberikan ke agent berikutnya.
+- Repo app lama jadi dirty: arahkan `-o` ke folder di luar repo legacy.
+- Command Codex belum ada: dari repo ini jalankan `make install-codex`, lalu cek dengan `~/.codex/skills/feature-map/scripts/feature_map_cli.py doctor`.
 
 ### Bukti, Bukan Hype
 
