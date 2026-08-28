@@ -78,7 +78,7 @@ Setelah temuan dilaporkan (atau tidak ada temuan):
 
 ## Kalau ada nama flow
 
-1. Baca entry flow tersebut dari `FEATURE-MAP.yaml`: policy, touchpoints, invariants, dan `mechanics_doc` kalau ada (baca juga file markdown-nya).
+1. Baca entry flow tersebut dari `FEATURE-MAP.yaml`: policy, business_aspects, touchpoints, invariants, dan `mechanics_doc` kalau ada (baca juga file markdown-nya).
 2. Baca **semua file touchpoint** (resolve glob-nya dulu). Kalau ada glob yang tidak match file apa pun, laporkan sebagai touchpoint mati (file dipindah/dihapus — registry perlu diupdate).
    Touchpoint dengan field `repo: <nama>` berada di repo lain: resolve
    path-nya lewat `~/.claude/feature-maps/registry.json` (kunci
@@ -92,6 +92,7 @@ Setelah temuan dilaporkan (atau tidak ada temuan):
    - Enum/status: nilai status yang dikenal tiap sisi harus sama.
    - Kontrak API: request/response yang dipakai client vs yang diexpose backend vs yang terdokumentasi (mis. Postman collection).
    - Copy/label UI yang menjanjikan perilaku tertentu vs perilaku backend sebenarnya.
+   - `business_aspects`: kalau ada `formula`, cek rumus engine; `status`, cek lifecycle/mapping label; `validation`, cek form dan backend; `permission`/`eligibility`, cek gate approve/edit/delete; `visibility`, cek kondisi show/hide/disabled frontend; `report`/`export`, cek output/format; `notification`/`scheduler`, cek side effect background; `migration`, cek aturan import/historical compatibility.
    - Kalau ada `mechanics_doc`: cocokkan rumus/mode/contoh angka yang dinarasikan di dokumen itu terhadap kode sebenarnya — laporkan **DRIFT** kalau dokumen menyebut rumus/mode yang sudah tidak ada di kode (atau sebaliknya, kode punya mode/pengecualian yang belum masuk dokumen). Kalau flow ini jelas punya banyak mode/varian atau rumus dengan beberapa kondisi tapi belum punya `mechanics_doc`, catat sebagai gap dan sarankan membuatnya (lihat SKILL.md aturan #8) — jangan dilewatkan diam-diam.
 4. Laporkan hasil sebagai daftar temuan, urut dari paling kritis:
    - **GAP** — inkonsistensi nyata yang bisa bikin bug/stuck user (sebutkan file:line kedua sisi)

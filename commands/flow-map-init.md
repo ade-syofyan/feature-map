@@ -20,6 +20,9 @@ flows:
   nama-flow-kebab:
     description: "satu kalimat"
     policy: "kebijakan bisnis yang berlaku saat ini"
+    business_aspects:
+      - validation
+      - status
     touchpoints:
       - path: "glob/relatif/dari/root/**/File*.kt"
         role: client-form
@@ -31,5 +34,6 @@ flows:
 ```
 
    Role yang disarankan: `client-form`, `client-view`, `backend-validation`, `backend-service`, `admin-view`, `data-schema`, `docs`, `db-migration`, `event-consumer`.
+   `business_aspects` yang disarankan: `formula`, `status`, `validation`, `permission`, `eligibility`, `visibility`, `report`, `export`, `notification`, `scheduler`, `migration`.
 6. Kalau saat mapping ketemu flow yang rule bisnisnya kompleks (banyak mode/varian, rumus dengan beberapa kondisi, banyak pengecualian) — jangan dipaksa muat ke satu baris `invariants:`. Tambahkan `mechanics_doc: "docs/flows/<nama-flow>.md"` dan siapkan draft dokumen naratifnya (lihat SKILL.md aturan #8) sebagai bagian dari draft ini juga.
 7. Tunjukkan draft ke user untuk direview sebelum dianggap final, sertakan ringkasan cakupan: total modul di checklist langkah 2 vs total flow yang berhasil didaftarkan — harus 1:1 (kecuali item yang memang murni infrastruktur non-bisnis, sebutkan itemnya). Ingatkan bahwa hook reminder aktif otomatis begitu file ini ada di root project.

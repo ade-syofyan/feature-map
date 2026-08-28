@@ -103,3 +103,21 @@ def test_handle_no_touchpoint_hit_writes_no_pending(tmp_path):
     }
     hook.handle(payload)
     assert fm_pending.load_all_pending(str(tmp_path)) == {}
+
+
+def test_handle_writes_condition_snippets_to_pending_entry(tmp_path, capsys):
+    file_path = _setup(tmp_path)
+    payload = {
+        "cwd": str(tmp_path),
+        "tool_name": "Edit",
+        "tool_input": {
+            "file_path": str(file_path),
+            "new_string": "@if($recap->status === 'approved')\n<button disabled>Approve</button>\n@endif",
+        },
+    }
+    hook.handle(payload)
+    capsys.readouterr()
+
+    entry = fm_pending.load_all_pending(str(tmp_path))["attendance-recap"]
+
+    assert any("approved" in snippet for snippet in entry["condition_snippets"])

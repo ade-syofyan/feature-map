@@ -192,6 +192,21 @@ def test_detect_formula_change_no_tool_input_text_returns_empty():
     assert hook.detect_formula_change("Bash", {"command": "echo hi"}) == []
 
 
+def test_detect_business_condition_change_finds_status_and_ui_rules():
+    new_string = (
+        "@if($spd->status === 'approved' && auth()->user()->can('approve-spd'))\n"
+        "  <button disabled=\"{{ $locked }}\">Approve</button>\n"
+        "@endif\n"
+        "$name = 'John';\n"
+    )
+
+    hits = hook.detect_business_condition_change("Edit", {"new_string": new_string})
+
+    assert len(hits) == 2
+    assert any("approved" in hit for hit in hits)
+    assert any("disabled" in hit for hit in hits)
+
+
 def test_handle_reminder_includes_mechanics_doc_and_formula_warning(tmp_path, capsys):
     (tmp_path / "FEATURE-MAP.yaml").write_text(FM)
     file_path = tmp_path / "app" / "Recap.php"

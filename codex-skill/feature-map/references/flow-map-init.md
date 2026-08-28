@@ -15,6 +15,9 @@ flows:
   nama-flow-kebab:
     description: "satu kalimat"
     policy: "kebijakan bisnis yang berlaku saat ini"
+    business_aspects:
+      - validation
+      - status
     touchpoints:
       - path: "glob/relatif/dari/root/**/File*.kt"
         role: client-form
@@ -29,5 +32,9 @@ If a flow's business rule turns out to be complex during this pass (several mode
 formula with multiple conditions, many exceptions) — don't try to cram it into one `invariants:`
 line. Add `mechanics_doc: "docs/flows/<flow-name>.md"` and draft that companion doc with the full
 narrative (see SKILL.md Core Rule 6) instead of leaving the rule under-documented.
+
+Use `business_aspects` for the kind of rule being protected: `formula`, `status`, `validation`,
+`permission`, `eligibility`, `visibility`, `report`, `export`, `notification`, `scheduler`, or
+`migration`.
 
 Show the draft to the user for review before treating it as final, and include a coverage summary: total modules found in step 2's checklist vs. total flows registered — this should be 1:1 (call out any item skipped as pure infrastructure by name).

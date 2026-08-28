@@ -27,8 +27,44 @@ SUPPORTED_ROLES = {
     "db-migration",
     "event-consumer",
 }
-LIST_FIELDS = ("touchpoints", "invariants", "impacts", "evidence", "history")
+SUPPORTED_BUSINESS_ASPECTS = {
+    "formula",
+    "status",
+    "validation",
+    "permission",
+    "eligibility",
+    "visibility",
+    "report",
+    "export",
+    "notification",
+    "scheduler",
+    "migration",
+}
+LIST_FIELDS = ("touchpoints", "invariants", "impacts", "evidence", "history", "business_aspects")
 FILTER_FIELD_NAMES = {"q", "query", "search", "keyword", "status", "from", "to", "date", "start_date", "end_date"}
+GENERIC_INVARIANT_PATTERNS = (
+    "must stay consistent across",
+    "harus konsisten antar",
+    "harus tetap konsisten",
+    "business rules must stay consistent",
+)
+CONCRETE_INVARIANT_RE = re.compile(
+    r"(::|->|\$|\b[A-Za-z]+Controller\b|\b[A-Za-z]+Service\b|\b[A-Za-z]+Rule\b|"
+    r"\b[A-Z0-9_]{3,}\b|[=<>]|'[^']+'|\"[^\"]+\")"
+)
+BUSINESS_RULE_LINE_RE = re.compile(
+    r"(@?if\s*\(|\b(?:where|whereIn|required_if|Rule::requiredIf|can|cannot)\s*\(|"
+    r"\b(?:disabled|readonly|hidden|visible|v-if|x-show)\b|"
+    r"\b(?:status|role|permission|eligible|eligibility)\b\s*(?:[=!<>]=|===|!==|\bin\b))",
+    re.IGNORECASE,
+)
+STATIC_UI_ATTR_RE = re.compile(r"\b(?:disabled|readonly|hidden|visible)\b", re.IGNORECASE)
+BUSINESS_RULE_SIGNAL_RE = re.compile(
+    r"\b(status|approve|approval|reject|role|permission|canManage|eligible|eligibility|"
+    r"is_active|aktif|shift|libur|holiday|piket|lembur|gaji|payroll|payment|periode|period|"
+    r"tanggal|date|locked|allowed)\b",
+    re.IGNORECASE,
+)
 
 
 def latest_cache_root() -> Path | None:
@@ -418,6 +454,11 @@ def _extract_views(root: Path, profile: str = "generic") -> list[dict]:
         route_refs = sorted(set(re.findall(r"route\(['\"]([^'\"]+)['\"]", text) + re.findall(r"\b(?:href|to)=['\"]([^'\"]+)['\"]", text)))
         buttons = sorted(set(re.findall(r"<button[^>]*>(.*?)</button>", text, re.I | re.S)))
         clean_buttons = [re.sub(r"<[^>]+>", "", b).strip() for b in buttons if re.sub(r"<[^>]+>", "", b).strip()]
+        business_rules = []
+        for line in text.splitlines():
+            snippet = _business_rule_candidate(line)
+            if snippet:
+                business_rules.append(snippet)
         rel = path.relative_to(root)
         parts = rel.parts
         module = "ui"
@@ -434,9 +475,35 @@ def _extract_views(root: Path, profile: str = "generic") -> list[dict]:
             "filters": [f for f in fields if f in FILTER_FIELD_NAMES],
             "route_refs": route_refs,
             "buttons": clean_buttons,
+            "business_rules": business_rules[:20],
             "forms": len(re.findall(r"<form\b", text, re.I)),
         })
     return views
+
+
+def _business_rule_candidate(line: str) -> str:
+    snippet = line.strip()
+    if not snippet:
+        return ""
+    if snippet.startswith((".", "#")):
+        return ""
+    if "modal fade" in snippet and "aria-hidden" in snippet:
+        return ""
+    if re.search(r"<input[^>]+type=[\"']hidden[\"']", snippet, re.IGNORECASE):
+        return ""
+    if STATIC_UI_ATTR_RE.search(snippet) and not re.search(
+        r"(@if|v-if|x-show|wire:|:[A-Za-z-]*=|\{\{|\{[^}]*status|can\(|cannot\()",
+        snippet,
+        re.IGNORECASE,
+    ):
+        return ""
+    if not BUSINESS_RULE_LINE_RE.search(snippet):
+        return ""
+    if not BUSINESS_RULE_SIGNAL_RE.search(snippet):
+        return ""
+    if len(snippet) > 160:
+        snippet = snippet[:157] + "..."
+    return snippet
 
 
 def _extract_database(root: Path) -> dict:
@@ -504,6 +571,15 @@ def _lines(title: str, items: list[str]) -> str:
     return f"# {title}\n\n{body}\n"
 
 
+def _is_generic_invariant(invariant: str) -> bool:
+    lowered = invariant.lower()
+    if not any(pattern in lowered for pattern in GENERIC_INVARIANT_PATTERNS):
+        return False
+    if len(invariant.split()) > 18:
+        return False
+    return not CONCRETE_INVARIANT_RE.search(invariant)
+
+
 def cmd_extract_app(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     if not root.is_dir():
@@ -522,16 +598,16 @@ def cmd_extract_app(args: argparse.Namespace) -> int:
     modules: dict[str, dict] = {}
     for route in routes:
         modules.setdefault(route["module"], {
-            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": []},
+            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": [], "business_rules": []},
             "db_tables": [], "risks": [],
         })["routes"].append(route)
     for view in views:
         module = modules.setdefault(view["module"], {
-            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": []},
+            "routes": [], "views": [], "auth": [], "ui": {"fields": [], "filters": [], "buttons": [], "route_refs": [], "business_rules": []},
             "db_tables": [], "risks": [],
         })
         module["views"].append(view["path"])
-        for key in ("fields", "filters", "buttons", "route_refs"):
+        for key in ("fields", "filters", "buttons", "route_refs", "business_rules"):
             module["ui"][key] = sorted(set(module["ui"][key] + view[key]))
     for name, module in modules.items():
         auth = sorted({mw for route in module["routes"] for mw in route["middleware"]})
@@ -598,6 +674,7 @@ def cmd_extract_app(args: argparse.Namespace) -> int:
         ]))
         _write(base / "ui-actions.md", _lines("UI Actions", module["ui"]["buttons"] + module["ui"]["route_refs"]))
         _write(base / "forms-filters.md", _lines("Forms And Filters", module["ui"]["fields"]))
+        _write(base / "business-rules-candidates.md", _lines("Business Rules Candidates", module["ui"]["business_rules"]))
         _write(base / "db-touchpoints.md", _lines("DB Touchpoints", module["db_tables"]))
         _write(base / "api-candidates.md", _lines("API Candidates", [
             f"{r['method']} {r['uri']} from {r['name'] or r['controller'] or 'unnamed'}" for r in module["routes"]
@@ -633,6 +710,7 @@ def cmd_quality(args: argparse.Namespace) -> int:
         "placeholder_touchpoints": 0,
         "dead_touchpoints": 0,
         "missing_invariants": 0,
+        "generic_invariants": 0,
         "missing_touchpoints": 0,
     }
     for name, flow in sorted(flows.items()):
@@ -642,6 +720,10 @@ def cmd_quality(args: argparse.Namespace) -> int:
         if not flow.get("invariants"):
             summary["missing_invariants"] += 1
             issues.append({"type": "missing-invariants", "flow": name})
+        for invariant in flow.get("invariants", []):
+            if _is_generic_invariant(invariant):
+                summary["generic_invariants"] += 1
+                issues.append({"type": "generic-invariant", "flow": name, "invariant": invariant})
         touchpoints = flow.get("touchpoints", [])
         if not touchpoints:
             summary["missing_touchpoints"] += 1
@@ -692,6 +774,9 @@ def cmd_validate(args: argparse.Namespace) -> int:
         for field in LIST_FIELDS:
             if not isinstance(flow.get(field, []), list):
                 issues.append({"type": "invalid-list-field", "flow": name, "field": field})
+        for aspect in flow.get("business_aspects", []):
+            if aspect not in SUPPORTED_BUSINESS_ASPECTS:
+                issues.append({"type": "invalid-business-aspect", "flow": name, "aspect": aspect})
         for tp in flow.get("touchpoints", []):
             if not isinstance(tp, dict):
                 issues.append({"type": "invalid-touchpoint", "flow": name})

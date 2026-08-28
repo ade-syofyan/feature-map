@@ -13,11 +13,11 @@ Entries like `<repo>:<path>` are cross-repo dirty files; resolve repo names thro
 
 ## Audit Steps
 
-1. Read the target flow: `policy`, `touchpoints`, `invariants`, `impacts`, and `mechanics_doc` if present.
+1. Read the target flow: `policy`, `business_aspects`, `touchpoints`, `invariants`, `impacts`, and `mechanics_doc` if present.
 2. Resolve every touchpoint glob. If a glob matches nothing, report `DRIFT`.
 3. For touchpoints with `repo: <name>`, resolve the repo path from the registry. If missing, report `UNRESOLVED` and continue.
 4. Read all matched touchpoint files. If `mechanics_doc` is set, also read that file.
-5. Compare implementation against policy and each invariant, focusing on validation, enum/status, API contract, UI copy, docs, migrations, and event consumers. If `mechanics_doc` exists, also compare its narrated formulas/modes/examples against the actual code — report `DRIFT` if the doc describes a formula or mode the code no longer has (or vice versa). If the flow clearly has multiple modes/variants or a multi-condition formula but has no `mechanics_doc`, note that as a gap and suggest adding one (see SKILL.md Core Rule 6) rather than silently skipping it.
+5. Compare implementation against policy and each invariant, focusing on validation, enum/status, API contract, UI copy, docs, migrations, and event consumers. Use `business_aspects` as the audit checklist: `formula` means inspect calculation engines, `status` means lifecycle and label mapping, `validation` means client and backend requirements, `permission`/`eligibility` means approve/edit/delete gates, `visibility` means frontend show/hide/disabled conditions, `report`/`export` means output format and filters, `notification`/`scheduler` means background side effects, and `migration` means import/historical compatibility. If `mechanics_doc` exists, also compare its narrated formulas/modes/examples against the actual code — report `DRIFT` if the doc describes a formula or mode the code no longer has (or vice versa). If the flow clearly has multiple modes/variants or a multi-condition formula but has no `mechanics_doc`, note that as a gap and suggest adding one (see SKILL.md Core Rule 6) rather than silently skipping it.
 6. If `.code-review-graph/graph.db` exists, run the plugin graph helper:
 
 ```bash
