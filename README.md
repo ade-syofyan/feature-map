@@ -14,7 +14,7 @@ It also includes an **App Migration Extractor** for turning a legacy or target a
 read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
 and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.11.0-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.11.1-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Migration](https://img.shields.io/badge/app%20migration-extractor-22c55e?style=flat-square)](#app-migration-extractor)
@@ -389,6 +389,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.11.1 - CI Parser Compatibility
+
+- Fixes `business_aspects` parsing when PyYAML is unavailable, matching the GitHub Actions fallback-parser path.
+- Validates non-string business aspect entries without crashing.
+- Adds a regression test that forces the no-PyYAML parser path.
 
 #### v0.11.0 - Business Logic Coverage
 
@@ -914,6 +920,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.11.1 - Kompatibilitas Parser CI
+
+- Memperbaiki parsing `business_aspects` saat PyYAML tidak tersedia, sesuai jalur fallback parser di GitHub Actions.
+- Memvalidasi item business aspect non-string tanpa crash.
+- Menambahkan regression test yang memaksa jalur parser tanpa PyYAML.
 
 #### v0.11.0 - Cakupan Logik Bisnis
 
