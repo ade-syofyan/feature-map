@@ -268,7 +268,7 @@ def parse_feature_map(text):
 
         if current_list and stripped.startswith("- "):
             body = stripped[2:].strip()
-            if current_list in ("invariants", "impacts"):
+            if current_list in ("invariants", "impacts", "business_aspects"):
                 flow[current_list].append(unquote(body))
             else:
                 current_item = {}

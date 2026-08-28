@@ -13,6 +13,8 @@ sys.path.insert(
     ),
 )
 import feature_map_cli
+feature_map_cli.add_plugin_hooks_to_path()
+import feature_map_hook
 
 
 def test_plugin_root_ignores_parent_directory_without_hooks(monkeypatch, tmp_path):
@@ -229,6 +231,29 @@ def test_validate_report_flags_schema_errors(tmp_path, capsys):
 
 
 def test_validate_report_ok_for_supported_schema(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  attendance:\n'
+        '    description: "Attendance"\n'
+        '    business_aspects:\n'
+        '      - status\n'
+        '      - validation\n'
+        '    touchpoints:\n'
+        '      - path: "app/Attendance.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Attendance status must match reports"\n'
+    )
+
+    assert feature_map_cli.cmd_validate(type("Args", (), {"root": str(tmp_path)})()) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is True
+    assert payload["issues"] == []
+
+
+def test_validate_report_ok_for_supported_schema_without_pyyaml(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(feature_map_hook, "_parse_feature_map_with_pyyaml", lambda _text: None)
     (tmp_path / "FEATURE-MAP.yaml").write_text(
         'flows:\n'
         '  attendance:\n'

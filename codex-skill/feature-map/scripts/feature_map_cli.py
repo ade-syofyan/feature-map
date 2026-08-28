@@ -775,6 +775,9 @@ def cmd_validate(args: argparse.Namespace) -> int:
             if not isinstance(flow.get(field, []), list):
                 issues.append({"type": "invalid-list-field", "flow": name, "field": field})
         for aspect in flow.get("business_aspects", []):
+            if not isinstance(aspect, str):
+                issues.append({"type": "invalid-business-aspect", "flow": name, "aspect": str(aspect)})
+                continue
             if aspect not in SUPPORTED_BUSINESS_ASPECTS:
                 issues.append({"type": "invalid-business-aspect", "flow": name, "aspect": aspect})
         for tp in flow.get("touchpoints", []):
