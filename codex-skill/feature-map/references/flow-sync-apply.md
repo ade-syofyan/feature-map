@@ -18,7 +18,7 @@ python3 /Users/adesyofyan/.codex/skills/feature-map/scripts/feature_map_cli.py p
 ```
 
 Prints `{}` if nothing is pending — stop here, nothing to do. Otherwise it
-prints `{flow_id: {flow, file, role, tool_name, diff, formula_snippets,
+prints `{flow_id: {flow, file, role, tool_name, diff, formula_snippets, condition_snippets,
 current_policy, current_invariants, current_mechanics_doc, timestamp}}` for
 every flow with unsynced drift.
 
@@ -28,14 +28,14 @@ every flow with unsynced drift.
    `current_policy`/`current_invariants` in the entry only as "what was
    already documented at edit time").
 3. Decide: does `diff` represent an actual business-rule change (formula,
-   threshold, validation, eligibility condition) or a non-semantic change
+   threshold, validation, eligibility condition, status, permission, or UI visibility) or a non-semantic change
    (refactor, rename, formatting)? If non-semantic: note it as skipped, and
    clear that flow's pending file (see step 5 — same command handles both
    the synced and skipped path). Do not edit `FEATURE-MAP.yaml` for a
    skipped flow.
 4. For a real business-rule change: write the new/revised `invariants:` line
    (and `policy:` if relevant) directly into `FEATURE-MAP.yaml` with your
-   normal file-edit tool. If `formula_snippets` suggests a complex formula
+   normal file-edit tool. If `formula_snippets` or `condition_snippets` suggests a complex rule
    (several modes/conditions) and the flow has no `mechanics_doc` yet,
    suggest — don't create automatically — a `docs/flows/<flow_id>.md`
    companion doc per SKILL.md Core Rule 6.

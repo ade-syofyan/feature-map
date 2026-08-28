@@ -88,6 +88,9 @@ flows:
     description: "satu kalimat"
     confidence: draft
     policy: "kebijakan bisnis saat ini"
+    business_aspects:
+      - status
+      - validation
     mechanics_doc: "docs/flows/nama-flow-kebab.md"   # optional, see Core Rule 6
     evidence:
       - source: "docs/blueprint.pdf"
@@ -108,6 +111,13 @@ narrates "how it works and what the rules are" for that flow (see Core Rule 6). 
 content, but at minimum should cover: a summary of each mode/variant, the full formula with real
 numeric examples (not just variable names), and a list of exceptions/edge cases with their
 business reasoning.
+
+`business_aspects` is optional — a lightweight tag list for the kind of business rule being
+protected, not another file location. Supported values: `formula`, `status`, `validation`,
+`permission`, `eligibility`, `visibility`, `report`, `export`, `notification`, `scheduler`,
+and `migration`. Use it for rules that are easy to miss, such as frontend button visibility,
+status lifecycle, scheduled reminders, report/export semantics, historical imports, and payroll
+calculation engines.
 
 Supported touchpoint roles include `client-form`, `client-view`, `backend-validation`, `backend-service`, `admin-view`, `data-schema`, `docs`, `db-migration`, and `event-consumer`.
 

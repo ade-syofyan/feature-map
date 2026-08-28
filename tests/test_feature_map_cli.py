@@ -128,20 +128,30 @@ def test_quality_report_flags_placeholder_dead_and_missing_rules(tmp_path, capsy
         '        role: backend-service\n'
         '    invariants:\n'
         '      - "Attendance status must match reports"\n'
+        '  generic:\n'
+        '    description: "Generic"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Generic.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Business rules must stay consistent across UI, backend, database, and reports"\n'
     )
     app = tmp_path / "app"
     app.mkdir()
     (app / "Attendance.php").write_text("<?php\n")
+    (app / "Generic.php").write_text("<?php\n")
 
     assert feature_map_cli.cmd_quality(type("Args", (), {"root": str(tmp_path)})()) == 1
     payload = json.loads(capsys.readouterr().out)
 
     assert payload["ok"] is False
-    assert payload["flows"] == 2
+    assert payload["flows"] == 3
     assert payload["summary"]["draft_flows"] == 1
     assert payload["summary"]["placeholder_touchpoints"] == 1
     assert payload["summary"]["dead_touchpoints"] == 2
     assert payload["summary"]["missing_invariants"] == 1
+    assert payload["summary"]["generic_invariants"] == 1
+    assert {"type": "generic-invariant", "flow": "generic", "invariant": "Business rules must stay consistent across UI, backend, database, and reports"} in payload["issues"]
 
 
 def test_quality_report_ok_for_resolved_map(tmp_path, capsys):
@@ -165,6 +175,28 @@ def test_quality_report_ok_for_resolved_map(tmp_path, capsys):
 
     assert payload["ok"] is True
     assert payload["issues"] == []
+
+
+def test_quality_report_allows_detailed_invariant_with_consistency_phrase(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  piket:\n'
+        '    description: "Piket"\n'
+        '    touchpoints:\n'
+        '      - path: "app/Piket.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Piket libur pengganti memakai KaryawanPiketRule::resolveCompensationWindow untuk Sabtu/Minggu dan holiday washing_gr; harus tetap konsisten dengan LeaveController::compensationEligiblePiketFilter"\n'
+    )
+    app = tmp_path / "app"
+    app.mkdir()
+    (app / "Piket.php").write_text("<?php\n")
+
+    assert feature_map_cli.cmd_quality(type("Args", (), {"root": str(tmp_path)})()) == 0
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["ok"] is True
+    assert payload["summary"]["generic_invariants"] == 0
 
 
 def test_quality_report_requires_feature_map(tmp_path, capsys):
@@ -201,6 +233,9 @@ def test_validate_report_ok_for_supported_schema(tmp_path, capsys):
         'flows:\n'
         '  attendance:\n'
         '    description: "Attendance"\n'
+        '    business_aspects:\n'
+        '      - status\n'
+        '      - validation\n'
         '    touchpoints:\n'
         '      - path: "app/Attendance.php"\n'
         '        role: backend-service\n'
@@ -213,6 +248,25 @@ def test_validate_report_ok_for_supported_schema(tmp_path, capsys):
 
     assert payload["ok"] is True
     assert payload["issues"] == []
+
+
+def test_validate_report_flags_invalid_business_aspects(tmp_path, capsys):
+    (tmp_path / "FEATURE-MAP.yaml").write_text(
+        'flows:\n'
+        '  attendance:\n'
+        '    business_aspects:\n'
+        '      - mood\n'
+        '    touchpoints:\n'
+        '      - path: "app/Attendance.php"\n'
+        '        role: backend-service\n'
+        '    invariants:\n'
+        '      - "Attendance status must match reports"\n'
+    )
+
+    assert feature_map_cli.cmd_validate(type("Args", (), {"root": str(tmp_path)})()) == 1
+    payload = json.loads(capsys.readouterr().out)
+
+    assert {"type": "invalid-business-aspect", "flow": "attendance", "aspect": "mood"} in payload["issues"]
 
 
 def test_extract_app_writes_laravel_migration_pack(tmp_path, capsys):
@@ -263,7 +317,9 @@ def test_extract_app_writes_laravel_migration_pack(tmp_path, capsys):
         "</form>\n"
         "<form method=\"POST\" action=\"{{ route('pos.store') }}\">\n"
         "  <input name=\"invoice_no\">\n"
+        "  @if($sale->status === 'draft')\n"
         "  <button type=\"submit\">Save</button>\n"
+        "  @endif\n"
         "</form>\n"
     )
 
@@ -292,8 +348,10 @@ def test_extract_app_writes_laravel_migration_pack(tmp_path, capsys):
     assert "auth" in pos["auth"]
     assert "search" in pos["ui"]["fields"]
     assert "status" in pos["ui"]["filters"]
+    assert any("draft" in rule for rule in pos["ui"]["business_rules"])
     assert "sales" in pos["db_tables"]
     assert data["database"]["tables"]["sales"]["columns"]["total"]["type"] == "decimal"
+    assert (out / "modules" / "pos" / "business-rules-candidates.md").is_file()
 
 
 def test_extract_app_supports_non_php_node_routes(tmp_path, capsys):
@@ -368,3 +426,31 @@ def test_extract_app_laravel_does_not_leak_group_middleware_or_treat_controllers
     assert public_route["middleware"] == []
     assert all("app/Http/Controllers/PublicController.php" != view["path"] for view in data["views"])
     assert "not_a_view" not in data["modules"]["public"]["ui"]["fields"]
+
+
+def test_extract_app_business_rule_candidates_skip_static_css_and_modal_markup(tmp_path, capsys):
+    (tmp_path / "package.json").write_text(json.dumps({"dependencies": {"express": "^4.18.0"}}))
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "orders.ts").write_text("router.get('/orders', listOrders);\n")
+    (src / "OrdersPage.tsx").write_text(
+        ".btn:disabled { opacity: .5; }\n"
+        "<div class=\"modal fade\" aria-hidden=\"true\"></div>\n"
+        "<input type=\"hidden\" name=\"days[1][hari]\" />\n"
+        "<button disabled>Next</button>\n"
+        "if (!button) return;\n"
+        "{order.status === 'draft' && <button>Approve</button>}\n"
+    )
+    out = tmp_path / "extract"
+    args = type("Args", (), {
+        "root": str(tmp_path),
+        "output": str(out),
+        "profile": "auto",
+        "module": "all",
+    })()
+
+    assert feature_map_cli.cmd_extract_app(args) == 0
+    data = json.loads((out / "index.json").read_text())
+    rules = data["modules"]["orders"]["ui"]["business_rules"]
+
+    assert rules == ["{order.status === 'draft' && <button>Approve</button>}"]

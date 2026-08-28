@@ -14,7 +14,7 @@ It also includes an **App Migration Extractor** for turning a legacy or target a
 read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
 and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.10.3-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.11.0-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Migration](https://img.shields.io/badge/app%20migration-extractor-22c55e?style=flat-square)](#app-migration-extractor)
@@ -238,6 +238,10 @@ flows:
   partner-registration:
     description: "Partner signs up, gets validated, and is reviewed by admin"
     policy: "KTP is required before partner verification can be approved"
+    business_aspects:
+      - validation
+      - status
+      - visibility
     touchpoints:
       - path: "mobile/**/PartnerRegistrationForm.*"
         role: client-form
@@ -253,6 +257,12 @@ flows:
 ```
 
 If an agent edits the mobile form, `feature-map` reminds it to inspect backend validation, admin verification, and API docs before calling the task done.
+
+`touchpoints` tell the agent where a flow lives. `business_aspects` tell it what kind of rule to
+look for: formulas, status lifecycle, validation, permissions, eligibility, UI visibility,
+reports, exports, notifications, schedulers, and migration/import behavior. Frontend logic counts
+when it changes product behavior, for example hiding an approval button by status or showing a
+badge that promises a backend state.
 
 ### Claude Code Usage
 
@@ -379,6 +389,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.11.0 - Business Logic Coverage
+
+- Adds optional `business_aspects` tags so a flow can say what kind of rule must be audited: formula, status, validation, permission, eligibility, visibility, report, export, notification, scheduler, or migration.
+- Detects likely business condition changes in touchpoint edits, including status checks, permission gates, validation conditions, and frontend visibility/disabled rules.
+- App Migration Extractor now writes `business-rules-candidates.md` per module from condition clues, so migration packs carry more than route and file inventory.
+- `quality` now flags generic invariants that say only "stay consistent" without a concrete field, status, formula, condition, or side effect.
 
 #### v0.10.3 - App Migration Extract
 
@@ -746,6 +763,10 @@ flows:
   partner-registration:
     description: "Partner mendaftar, divalidasi, lalu direview admin"
     policy: "KTP wajib sebelum verifikasi partner bisa disetujui"
+    business_aspects:
+      - validation
+      - status
+      - visibility
     touchpoints:
       - path: "mobile/**/PartnerRegistrationForm.*"
         role: client-form
@@ -761,6 +782,12 @@ flows:
 ```
 
 Jika agent mengubah form mobile, `feature-map` akan mengingatkan agent untuk memeriksa validasi backend, halaman verifikasi admin, dan dokumentasi API sebelum task dianggap selesai.
+
+`touchpoints` menunjukkan aturan flow tinggal di file mana. `business_aspects` menunjukkan jenis
+aturan yang wajib dicek: rumus, status, validasi, permission, eligibility, visibility UI, report,
+export, notification, scheduler, dan migration/import. Logic frontend ikut dihitung kalau mengubah
+perilaku produk, misalnya tombol approval disembunyikan berdasarkan status atau badge UI menjanjikan
+state backend tertentu.
 
 ### Penggunaan Claude Code
 
@@ -887,6 +914,13 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.11.0 - Cakupan Logik Bisnis
+
+- Menambahkan tag opsional `business_aspects` agar flow bisa menyebut jenis aturan yang wajib diaudit: formula, status, validation, permission, eligibility, visibility, report, export, notification, scheduler, atau migration.
+- Mendeteksi kandidat perubahan kondisi bisnis di touchpoint edit, termasuk status check, permission gate, validasi bersyarat, dan aturan visibility/disabled frontend.
+- App Migration Extractor sekarang menulis `business-rules-candidates.md` per module dari clue kondisi, jadi migration pack tidak cuma berisi inventory route dan file.
+- `quality` sekarang menandai invariant generik yang hanya bilang "harus konsisten" tanpa field, status, rumus, kondisi, atau side effect konkret.
 
 #### v0.10.3 - Ekstrak Migrasi App
 
@@ -1015,6 +1049,20 @@ Role touchpoint yang didukung:
 - `docs`
 - `db-migration`
 - `event-consumer`
+
+`business_aspects` yang didukung:
+
+- `formula`
+- `status`
+- `validation`
+- `permission`
+- `eligibility`
+- `visibility`
+- `report`
+- `export`
+- `notification`
+- `scheduler`
+- `migration`
 
 ### Roadmap
 

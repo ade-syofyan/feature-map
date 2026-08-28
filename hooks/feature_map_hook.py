@@ -31,12 +31,23 @@ FORMULA_KEYWORDS = (
     "quota", "kuota", "limit", "sla", "score", "skor", "poin", "point",
     "tidak_hadir", "tidakhadir",
 )
+BUSINESS_CONDITION_KEYWORDS = (
+    "status", "approve", "approved", "reject", "rejected", "role", "permission",
+    "can(", "cannot", "eligible", "eligibility", "required", "required_if",
+    "disabled", "readonly", "hidden", "visible", "show", "hide", "where",
+    "wherein", "periode", "period", "tanggal", "date", "limit", "threshold",
+)
 
 # Baris kandidat rumus: ada assignment/return diikuti operator aritmatika
 # antara dua operand (menghindari false-positive dari path/URL/regex yang
 # kebetulan mengandung "/" atau "-").
 _FORMULA_LINE_RE = re.compile(
     r"(=|return)\s*[^=;\n]*[\w\)\]]\s*[+\-*/]\s*[\w$'\"(]"
+)
+_BUSINESS_CONDITION_RE = re.compile(
+    r"(@?if\s*\(|\b(?:where|whereIn|required_if|Rule::requiredIf|can|cannot)\s*\(|"
+    r"\b(?:disabled|readonly|hidden|visible|v-if|x-show)\b)",
+    re.IGNORECASE,
 )
 
 
@@ -64,6 +75,27 @@ def detect_formula_change(tool_name, tool_input):
         if not any(kw in low for kw in FORMULA_KEYWORDS):
             continue
         if not _FORMULA_LINE_RE.search(line):
+            continue
+        snippet = line.strip()
+        if len(snippet) > 160:
+            snippet = snippet[:157] + "..."
+        hits.append(snippet)
+        if len(hits) >= 5:
+            break
+    return hits
+
+
+def detect_business_condition_change(tool_name, tool_input):
+    """Cari kondisi/status/permission/UI state yang sering membawa rule bisnis."""
+    text = _formula_source_text(tool_name, tool_input)
+    if not text:
+        return []
+    hits = []
+    for line in text.splitlines():
+        low = line.lower()
+        if not any(kw in low for kw in BUSINESS_CONDITION_KEYWORDS):
+            continue
+        if not _BUSINESS_CONDITION_RE.search(line):
             continue
         snippet = line.strip()
         if len(snippet) > 160:
@@ -125,6 +157,7 @@ def _flow_defaults(flow):
     data.setdefault("impacts", [])
     data.setdefault("evidence", [])
     data.setdefault("history", [])
+    data.setdefault("business_aspects", [])
     data.setdefault("confidence", "")
     data.setdefault("mechanics_doc", "")
     data.setdefault("last_reviewed", "")
@@ -134,7 +167,7 @@ def _flow_defaults(flow):
                 {k: str(v) for k, v in item.items()} if isinstance(item, dict) else item
                 for item in data.get(key, [])
             ]
-    for key in ("invariants", "impacts"):
+    for key in ("invariants", "impacts", "business_aspects"):
         if isinstance(data.get(key), list):
             data[key] = [str(item) for item in data.get(key, [])]
     return data
@@ -209,8 +242,8 @@ def parse_feature_map(text):
 
         flow = flows[current_flow]
         if indent == 4:
-            if stripped.startswith(("touchpoints:", "invariants:", "impacts:", "evidence:",
-                                    "history:")):
+            if stripped.startswith(("touchpoints:", "invariants:", "impacts:", "business_aspects:",
+                                    "evidence:", "history:")):
                 key, _, val = stripped.partition(":")
                 current_list = key.strip()
                 current_item = None
@@ -420,6 +453,7 @@ def handle(payload):
 
     tool_name = payload.get("tool_name") or ""
     formula_snippets = detect_formula_change(tool_name, tool_input)
+    condition_snippets = detect_business_condition_change(tool_name, tool_input)
 
     lines = []
     for name, flow, matched_tp in hits:
@@ -467,6 +501,12 @@ def handle(payload):
                              "1 rumus sederhana), pertimbangkan bikin docs/flows/"
                              f"{name}.md berisi narasi lengkap + contoh angka, lalu daftarkan "
                              "sebagai `mechanics_doc` di flow ini (lihat SKILL.md aturan #8).")
+        if condition_snippets:
+            lines.append("  ⚠ KONDISI/STATUS/PERMISSION BISNIS terdeteksi berubah di file ini:")
+            for snip in condition_snippets:
+                lines.append(f"    | {snip}")
+            lines.append("  Kalau ini mengubah eligibility, validasi, visibility UI, status lifecycle, "
+                         "atau permission: catat sebagai invariant/policy di FEATURE-MAP.yaml.")
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     diff = _pending_diff(tool_name, tool_input)
@@ -478,6 +518,7 @@ def handle(payload):
             "tool_name": tool_name,
             "diff": diff,
             "formula_snippets": formula_snippets,
+            "condition_snippets": condition_snippets,
             "current_policy": flow.get("policy", ""),
             "current_invariants": list(flow.get("invariants", [])),
             "current_mechanics_doc": flow.get("mechanics_doc", ""),

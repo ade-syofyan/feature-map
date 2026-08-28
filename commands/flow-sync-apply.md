@@ -14,14 +14,14 @@ Langkah:
    Kalau hasilnya `{}`, beri tahu user "tidak ada drift tertunda" dan
    berhenti.
 3. Untuk tiap `flow_id` di hasil pending: baca entry-nya (`file`, `role`,
-   `tool_name`, `diff`, `formula_snippets`, `current_policy`,
+   `tool_name`, `diff`, `formula_snippets`, `condition_snippets`, `current_policy`,
    `current_invariants`, `current_mechanics_doc`) dan baca blok flow yang
    sesuai di `FEATURE-MAP.yaml` saat ini (bisa saja sudah berubah sejak
    entry dicatat — pakai isi file `FEATURE-MAP.yaml` sekarang sebagai
    sumber kebenaran, `current_*` di entry pending cuma konteks "apa yang
    sudah tercatat waktu edit terjadi").
 4. Nilai: apakah `diff` ini benar-benar perubahan aturan bisnis (formula,
-   threshold, validasi, kondisi kelayakan) — atau cuma refactor/rename/
+   threshold, validasi, kondisi kelayakan, status, permission, atau visibility UI) — atau cuma refactor/rename/
    format non-semantik? Kalau non-semantik: laporkan sebagai "dilewati,
    bukan perubahan aturan bisnis", lalu hapus file pending-nya juga (lihat
    perintah di langkah 7 — dipakai sama untuk path sync maupun skip) dan
@@ -32,8 +32,8 @@ Langkah:
 5. Kalau memang perubahan aturan bisnis: rangkum jadi kalimat
    `invariants:` baru (revisi kalau menggantikan aturan lama, tambahan
    kalau melengkapi) dan, kalau relevan, update `policy:`. Kalau
-   `formula_snippets` di entry menunjukkan rumus kompleks (banyak
-   mode/kondisi) dan flow itu belum punya `mechanics_doc`, pertimbangkan
+   `formula_snippets`/`condition_snippets` di entry menunjukkan rumus atau kondisi kompleks
+   (banyak mode/kondisi) dan flow itu belum punya `mechanics_doc`, pertimbangkan
    sarankan (bukan buat otomatis) dokumen `docs/flows/<flow_id>.md`
    mengikuti aturan #9 di SKILL.md.
 6. Terapkan perubahan dengan tool Edit langsung ke `FEATURE-MAP.yaml`. Di

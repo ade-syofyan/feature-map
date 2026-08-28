@@ -35,6 +35,9 @@ flows:
     description: "satu kalimat"
     confidence: draft          # draft|reviewed|approved
     policy: "kebijakan bisnis saat ini"
+    business_aspects:
+      - status              # formula|status|validation|permission|eligibility|visibility|report|export|notification|scheduler|migration
+      - validation
     mechanics_doc: "docs/flows/nama-flow-kebab.md"   # opsional, lihat aturan #8
     last_reviewed: "2026-07-30 (a1b2c3d)"            # opsional, diisi otomatis oleh flow-sync-apply
     evidence:
@@ -59,6 +62,8 @@ Glob dicocokkan terhadap path relatif dari root project (fnmatch; `*` juga match
 `confidence` dan `evidence` opsional, tapi disarankan untuk flow yang berasal dari dokumen enterprise. `draft` berarti hasil importer belum divalidasi ke code nyata.
 
 `mechanics_doc` opsional — path relatif dari root project ke markdown yang menjelaskan "cara main dan aturan main" flow tsb secara naratif (lihat aturan #8). Isi dokumen itu bebas formatnya, tapi minimal sebaiknya punya: ringkasan tiap mode/varian, rumus lengkap dengan contoh angka nyata (bukan cuma nama variabel), dan daftar pengecualian/edge case beserta alasannya.
+
+`business_aspects` opsional — tag ringan untuk jenis aturan bisnis yang wajib diaudit, bukan lokasi file. Pakai saat flow punya logic yang gampang kelewat: `formula`, `status`, `validation`, `permission`, `eligibility`, `visibility`, `report`, `export`, `notification`, `scheduler`, `migration`. Contoh: frontend yang menyembunyikan tombol berdasarkan status pakai `visibility` + `status`; engine payroll pakai `formula`; reminder email pakai `notification` + `scheduler`.
 
 `last_reviewed` opsional — jejak audit ringkas "siapa pun yang menyentuh flow ini terakhir kali sadar dan menyetujui perubahan aturan bisnisnya". Diisi otomatis oleh `/feature-map:flow-sync-apply` (tanggal + short SHA commit saat itu, kalau tersedia) setiap kali invariant/policy flow tsb disinkronkan — bukan mekanisme approval terpisah, cuma catatan hasil dari approval Edit yang sudah terjadi. Berguna untuk orang baru: kalau field ini basi dibanding riwayat commit touchpoint-nya, berarti ada perubahan yang belum tercatat sadar oleh siapa pun.
 
