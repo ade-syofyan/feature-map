@@ -1,5 +1,13 @@
 # Changelog - Freebuff Feature Map Adapter
 
+## v0.12.2 - 2026-08-31
+
+### Docs
+
+- Surface Freebuff as a supported adapter in the main README badge and availability tables.
+
+---
+
 ## v0.12.1 - 2026-08-31
 
 ### Fixes
