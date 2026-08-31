@@ -1,0 +1,37 @@
+# Feature Map - Registry Flow Bisnis
+# Dibuat untuk demo Freebuff adapter
+
+flows:
+  feature-map-plugin:
+    description: "Plugin feature-map untuk tracking flow bisnis lintas layer"
+    confidence: reviewed
+    policy: "Setiap perubahan touchpoint harus update FEATURE-MAP.yaml"
+    business_aspects:
+      - validation
+      - status
+    touchpoints:
+      - path: "skills/feature-map/SKILL.md"
+        role: docs
+        note: "Behavioral guidelines untuk agent"
+      - path: "hooks/*.py"
+        role: backend-service
+        note: "Hook scripts untuk Claude Code/Codex"
+      - path: "commands/*.md"
+        role: docs
+        note: "Command documentation"
+      - path: ".claude-plugin/plugin.json"
+        role: backend-validation
+        note: "Plugin configuration"
+      - path: "freebuff/*.py"
+        role: backend-service
+        note: "Freebuff adapter scripts"
+    invariants:
+      - "SKILL.md harus selalu ada dan terbaca oleh agent"
+      - "Hook scripts harus bisa parse FEATURE-MAP.yaml"
+      - "Touchpoint paths harus valid dan bisa di-match"
+    mechanics_doc: "freebuff/README.md"
+    history:
+      - date: "2026-08-31"
+        sha: "freebuff-adapter"
+        author: "Buffy"
+        change: "Menambahkan Freebuff adapter untuk hooks dan commands"
