@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "description": "Feature Map hooks untuk Freebuff - menggunakan run_file_change_hooks",
+  "hooks": {
+    "file_change": [
+      {
+        "pattern": "**/*.py",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.js",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.ts",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.java",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.kt",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.dart",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.vue",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.tsx",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      },
+      {
+        "pattern": "**/*.jsx",
+        "action": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py hook ${CHANGED_FILE}"
+      }
+    ]
+  },
+  "commands": {
+    "flow-audit": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py audit",
+    "flow-sync-apply": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py sync-apply",
+    "flow-map-init": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py init",
+    "flow-status": "python3 ${PROJECT_ROOT}/freebuff/freebuff_adapter.py status"
+  }
+}
