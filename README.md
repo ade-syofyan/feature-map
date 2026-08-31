@@ -17,6 +17,7 @@ and schema clues collected into one folder for the next build.
 [![Version](https://img.shields.io/badge/version-0.12.1-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
+[![Freebuff](https://img.shields.io/badge/Freebuff-adapter-10b981?style=flat-square)](#freebuff-usage)
 [![Migration](https://img.shields.io/badge/app%20migration-extractor-22c55e?style=flat-square)](#app-migration-extractor)
 [![Registry](https://img.shields.io/badge/registry-FEATURE--MAP.yaml-ffb454?style=flat-square)](#quick-example)
 
@@ -66,8 +67,9 @@ When a team inherits an old app, the hard part is rarely "find a file." The hard
 | --- | --- | --- |
 | Claude Code | Available | Native plugin commands, PostToolUse reminders, pre-commit sync checks |
 | Codex | Available | Skill adapter, flow audit workflow, registry helpers, shared source of truth |
+| Freebuff | Available | Adapter commands, file-change reminders, setup helpers, and pre-commit drift checks |
 
-The Claude plugin and Codex skill use the same `FEATURE-MAP.yaml` registry, so one project map can guide both agents.
+The Claude plugin, Codex skill, and Freebuff adapter use the same `FEATURE-MAP.yaml` registry, so one project map can guide each agent.
 
 ### What It Does
 
@@ -609,8 +611,9 @@ Saat tim mewarisi app lama, masalah tersulit biasanya bukan "cari file". Masalah
 | --- | --- | --- |
 | Claude Code | Tersedia | Command plugin native, reminder PostToolUse, pre-commit sync check |
 | Codex | Tersedia | Skill adapter, flow audit workflow, helper registry, source of truth yang sama |
+| Freebuff | Tersedia | Command adapter, reminder file-change, helper setup, dan pre-commit drift check |
 
-Plugin Claude dan skill Codex memakai registry `FEATURE-MAP.yaml` yang sama, jadi satu peta project bisa membimbing kedua agent.
+Plugin Claude, skill Codex, dan adapter Freebuff memakai registry `FEATURE-MAP.yaml` yang sama, jadi satu peta project bisa membimbing tiap agent.
 
 ### Fungsi Utama
 
