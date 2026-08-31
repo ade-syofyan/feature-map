@@ -2,64 +2,78 @@
 
 ## 📋 Ringkasan Perintah
 
-Ketik perintah berikut di chat Freebuff untuk menjalankan fungsi feature-map:
-
-### 1. Audit Flow
-```
-Jalankan feature-map audit
-```
-Atau spesifik:
-```
-Jalankan feature-map audit partner-registration
-```
-
-### 2. Cek Status
-```
-Jalankan feature-map status
-```
-
-### 3. Cek File (PostToolUse)
-```
-Cek apakah file src/api/partner.py adalah touchpoint feature-map
-```
-
-### 4. Init Feature Map
-```
-Buat FEATURE-MAP.yaml baru untuk project ini
-```
-
-### 5. Update Invariants
-```
-Update invariant flow partner-registration karena ada perubahan validasi
-```
-
-### 6. Flow Sync Apply
-```
-Jalankan feature-map sync apply
-```
-
-## 🔧 Script Python
-
-Semua command di atas menggunakan script adapter di:
-```
-freebuff/freebuff_adapter.py
-```
-
-### Jalankan Manual
-
 ```bash
-# Audit semua flow
+python3 freebuff/freebuff_adapter.py <command> [args]
+```
+
+## 🔧 Command Detail
+
+### `audit [flow]`
+Audit flow tertentu atau semua flow.
+```bash
 python3 freebuff/freebuff_adapter.py audit
-
-# Audit satu flow
 python3 freebuff/freebuff_adapter.py audit partner-registration
+```
+**Exit:** 0 = ok, 1 = flow tidak ditemukan
 
-# Cek status
+### `status`
+Tampilkan status sync semua flow.
+```bash
 python3 freebuff/freebuff_adapter.py status
+```
+**Exit:** 0
 
-# Cek file (hook)
+### `hook <file>`
+Cek apakah file adalah touchpoint.
+```bash
 python3 freebuff/freebuff_adapter.py hook src/api/partner.py
 ```
+**Exit:** 0 (selalu, output kosong jika bukan touchpoint)
+
+### `sync-apply` ⚠️ MVP
+List pending drift dan instruksi sync **manual**.
+
+**⚠️ MVP Behavior — belum apply/clear otomatis.**
+```bash
+python3 freebuff/freebuff_adapter.py sync-apply
+```
+Output menampilkan:
+- Daftar flow yang punya pending drift
+- Instruksi manual:
+  1. Baca file pending
+  2. Update FEATURE-MAP.yaml
+  3. Hapus file pending: `rm .freebuff/feature-map-pending/<flow>.json`
+
+**Exit:** 0 = tidak ada pending, 1 = ada pending
+
+### `init`
+Buat FEATURE-MAP.yaml minimal jika belum ada.
+```bash
+python3 freebuff/freebuff_adapter.py init
+```
+**Exit:** 0 = ok/sudah ada, 1 = gagal buat file
+
+### `pre-commit`
+Pre-commit check — blocks commit jika ada pending drift.
+```bash
+python3 freebuff/freebuff_adapter.py pre-commit
+```
+**Exit:** 0 = allow commit, 1 = block commit
+
+### `hook <file>` tanpa argumen
+**Exit:** 2 (error, menampilkan usage)
+
+### Unknown command
+```bash
+python3 freebuff/freebuff_adapter.py does-not-exist
+```
+**Exit:** 2 (error, menampilkan pesan error)
+
+### No command (usage)
+```bash
+python3 freebuff/freebuff_adapter.py
+```
+**Exit:** 2 (menampilkan daftar command)
 
 ## 📊 Workflow Freebuff
 
@@ -75,52 +89,29 @@ python3 freebuff/freebuff_adapter.py hook src/api/partner.py
 | Hook otomatis | ✅ PostToolUse | ⚠️ Manual via agent |
 | Slash commands | ✅ /feature-map:xxx | ❌ Tidak ada |
 | Reminder | ✅ Otomatis | ✅ Via SKILL.md |
-| Pre-commit | ✅ Otomatis | ⚠️ Manual via agent |
+| Pre-commit | ✅ Otomatis | ✅ Otomatis |
+| sync-apply | ✅ Full apply | ⚠️ MVP (list only) |
 
-## 📝 Changelog Commands
-
-### v0.12.0 (2026-08-31)
-- ✨ Audit command dibuat
-- ✨ Status command dibuat
-- ✨ Hook command dibuat
-- 📝 Dokumentasi commands
-
-### Planned
-- [ ] Flow sync apply command
-- [ ] Blueprint import command
-- [ ] Multi-repo flow command
-
-## 🐛 Troubleshooting Commands
+## 🐛 Troubleshooting
 
 ### Command tidak dikenali
 ```bash
-# Gunakan format yang benar
 python3 freebuff/freebuff_adapter.py <command> [args]
-
-# Atau ketik di chat
+# atau
 Jalankan feature-map <command>
 ```
 
 ### Flow tidak ditemukan
 ```bash
-# Cek daftar flow
 python3 freebuff/freebuff_adapter.py audit
-
-# Pastikan nama flow benar (gunakan kebab-case)
-python3 freebuff/freebuff_adapter.py audit partner-registration
 ```
 
-### File tidak terdeteksi sebagai touchpoint
+### Commit diblokir
 ```bash
-# Cek FEATURE-MAP.yaml
-cat FEATURE-MAP.yaml
-
-# Pastikan path touchpoint benar
-python3 freebuff/freebuff_adapter.py hook src/api/partner.py
+FEATURE_MAP_ACK=1 git commit -m "message"
 ```
 
-## 📚 Link Penting
+## 📚 Link
 
 - [README Utama](README.md)
 - [CHANGELOG](CHANGELOG.md)
-- [Feature Map Original](https://github.com/ade-syofyan/feature-map)
