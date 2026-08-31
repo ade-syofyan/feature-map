@@ -14,7 +14,7 @@ It also includes an **App Migration Extractor** for turning a legacy or target a
 read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
 and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.12.1-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.12.2-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Freebuff](https://img.shields.io/badge/Freebuff-adapter-10b981?style=flat-square)](#freebuff-usage)
@@ -391,6 +391,10 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.12.2 - Freebuff README Visibility
+
+- Surfaces Freebuff as a supported adapter in the main README badge and availability tables.
 
 #### v0.12.1 - Freebuff Adapter Fixes
 
@@ -935,6 +939,10 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.12.2 - Visibilitas Freebuff di README
+
+- Menampilkan Freebuff sebagai adapter yang didukung di badge dan tabel ketersediaan README utama.
 
 #### v0.12.1 - Perbaikan Adapter Freebuff
 
