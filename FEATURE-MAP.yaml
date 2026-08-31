@@ -1,5 +1,5 @@
 # Feature Map - Registry Flow Bisnis
-# Dibuat untuk demo Freebuff adapter
+# Source-of-truth untuk plugin feature-map itu sendiri (dogfooding)
 
 flows:
   feature-map-plugin:
@@ -10,6 +10,7 @@ flows:
       - validation
       - status
     touchpoints:
+      # Core plugin (Claude Code / Codex)
       - path: "skills/feature-map/SKILL.md"
         role: docs
         note: "Behavioral guidelines untuk agent"
@@ -22,13 +23,27 @@ flows:
       - path: ".claude-plugin/plugin.json"
         role: backend-validation
         note: "Plugin configuration"
-      - path: "freebuff/*.py"
+      # Freebuff adapter
+      - path: "freebuff/freebuff_adapter.py"
         role: backend-service
-        note: "Freebuff adapter scripts"
+        note: "Freebuff adapter utama — semua command"
+      - path: "freebuff/*.md"
+        role: docs
+        note: "Freebuff documentation (README, CHANGELOG, COMMANDS)"
+      - path: "freebuff/*.sh"
+        role: backend-service
+        note: "Freebuff shell scripts (setup, install hook)"
+      - path: ".freebuff/hooks.json"
+        role: backend-validation
+        note: "Freebuff hook configuration"
+      - path: "skills/feature-map/SKILL_FREEBUFF.md"
+        role: docs
+        note: "Behavioral guidelines khusus Freebuff"
     invariants:
       - "SKILL.md harus selalu ada dan terbaca oleh agent"
       - "Hook scripts harus bisa parse FEATURE-MAP.yaml"
       - "Touchpoint paths harus valid dan bisa di-match"
+      - "freebuff_adapter.py harus handle semua command di hooks.json"
     mechanics_doc: "freebuff/README.md"
     history:
       - date: "2026-08-31"

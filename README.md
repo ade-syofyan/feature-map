@@ -14,7 +14,7 @@ It also includes an **App Migration Extractor** for turning a legacy or target a
 read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
 and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.12.0-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.12.1-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Migration](https://img.shields.io/badge/app%20migration-extractor-22c55e?style=flat-square)](#app-migration-extractor)
@@ -389,6 +389,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 This is a keyword heuristic, not a verdict — a flagged test may already be covered by an invariant phrased differently. It surfaces candidates for human review, the same way `confidence: draft` does for blueprint imports.
 
 ### Releases
+
+#### v0.12.1 - Freebuff Adapter Fixes
+
+- Fixes Freebuff adapter exit codes for usage, unknown commands, missing hook arguments, and missing flow audits.
+- Fixes repo-style glob matching so `*` stays within one path segment and `**` matches zero or more segments.
+- Fixes YAML inline comments in Freebuff parser values and expands Freebuff touchpoints in `FEATURE-MAP.yaml`.
 
 #### v0.12.0 - Freebuff Adapter
 
@@ -926,6 +932,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.12.1 - Perbaikan Adapter Freebuff
+
+- Memperbaiki exit code adapter Freebuff untuk usage, unknown command, argumen hook kosong, dan audit flow yang tidak ditemukan.
+- Memperbaiki glob matching gaya repo supaya `*` hanya satu segment path dan `**` match nol atau lebih segment.
+- Memperbaiki parser inline comment YAML dan memperluas touchpoint Freebuff di `FEATURE-MAP.yaml`.
 
 #### v0.12.0 - Adapter Freebuff
 
