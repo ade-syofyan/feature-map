@@ -413,6 +413,38 @@ def test_extract_app_supports_non_php_node_routes(tmp_path, capsys):
     assert "search" in data["modules"]["orders"]["ui"]["fields"]
 
 
+
+def test_extract_app_supports_dart_flutter_and_reports_languages(tmp_path, capsys):
+    (tmp_path / "pubspec.yaml").write_text("name: shop_app\nflutter:\n  uses-material-design: true\n")
+    lib = tmp_path / "lib" / "screens"
+    lib.mkdir(parents=True)
+    (lib / "checkout.dart").write_text(
+        "import 'package:flutter/material.dart';\n"
+        "class CheckoutScreen extends StatelessWidget {\n"
+        "  Widget build(context) => Column(children: [\n"
+        "    TextFormField(decoration: InputDecoration(labelText: 'Invoice number')),\n"
+        "    ElevatedButton(child: Text('Pay now'), onPressed: null),\n"
+        "  ]);\n"
+        "}\n"
+    )
+    (lib / "routes.dart").write_text(
+        "final routes = [GoRoute(path: '/checkout', builder: (_, __) => CheckoutScreen())];\n"
+    )
+    out = tmp_path / "extract"
+    args = type("Args", (), {"root": str(tmp_path), "output": str(out), "profile": "auto", "module": "all"})()
+
+    assert feature_map_cli.cmd_extract_app(args) == 0
+    json.loads(capsys.readouterr().out)
+    data = json.loads((out / "index.json").read_text())
+
+    assert data["profile"] == "generic"
+    assert "dart" in data["languages"]
+    assert data["source_file_count"] == 2
+    assert "/checkout" in [route["uri"] for route in data["routes"]]
+    assert any("Invoice number" in field for view in data["views"] for field in view["fields"])
+    assert any("Pay now" in button for view in data["views"] for button in view["buttons"])
+
+
 def test_extract_app_laravel_does_not_leak_group_middleware_or_treat_controllers_as_views(tmp_path, capsys):
     (tmp_path / "composer.json").write_text(
         json.dumps({"require": {"laravel/framework": "^11.0"}})
