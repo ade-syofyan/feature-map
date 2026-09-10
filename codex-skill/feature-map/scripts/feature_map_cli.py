@@ -41,6 +41,15 @@ SUPPORTED_BUSINESS_ASPECTS = {
     "migration",
 }
 LIST_FIELDS = ("touchpoints", "invariants", "impacts", "evidence", "history", "business_aspects")
+# Source extensions are intentionally broad: the extractor is a static discovery
+# tool, so it should inventory Flutter/Dart and other client/server languages
+# instead of silently dropping a project just because it is not PHP or JS.
+SOURCE_EXTENSIONS = {
+    ".c", ".cc", ".cpp", ".cs", ".dart", ".ex", ".exs", ".go", ".java",
+    ".js", ".jsx", ".kt", ".kts", ".m", ".mm", ".php", ".py", ".rb",
+    ".html", ".rs", ".scala", ".swift", ".ts", ".tsx", ".vue",
+}
+CLIENT_SOURCE_EXTENSIONS = {".dart", ".html", ".jsx", ".js", ".tsx", ".ts", ".vue", ".swift", ".kt", ".kts"}
 FILTER_FIELD_NAMES = {"q", "query", "search", "keyword", "status", "from", "to", "date", "start_date", "end_date"}
 GENERIC_INVARIANT_PATTERNS = (
     "must stay consistent across",
@@ -415,18 +424,22 @@ def _extract_routes(root: Path) -> list[dict]:
 def _extract_generic_routes(root: Path) -> list[dict]:
     routes = []
     patterns = (
-        r"\b(?:router|app)\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]",
-        r"@(Get|Post|Put|Patch|Delete)\(['\"]([^'\"]*)['\"]\)",
+        r"\b(?:router|app|server)\.(get|post|put|patch|delete)\(['\"]([^'\"]+)['\"]",
+        r"@(Get|Post|Put|Patch|Delete|Route)\(['\"]([^'\"]*)['\"]\)",
+        r"\b(?:GoRoute|AutoRoute)\(\s*path\s*:\s*['\"]([^'\"]+)['\"]",
     )
     for rel in _repo_files(root):
-        if not rel.endswith((".js", ".jsx", ".ts", ".tsx", ".py", ".rb", ".go", ".java", ".cs")):
+        if Path(rel).suffix.lower() not in SOURCE_EXTENSIONS:
             continue
         path = root / rel
         text = path.read_text(encoding="utf-8", errors="ignore")
         for pattern in patterns:
             for found in re.finditer(pattern, text):
-                method = found.group(1).upper()
-                uri = found.group(2) or "/"
+                if found.lastindex == 1:
+                    method, uri = "GET", found.group(1)
+                else:
+                    method = found.group(1).upper()
+                    uri = found.group(2) or "/"
                 routes.append({
                     "method": method,
                     "uri": uri,
@@ -443,17 +456,32 @@ def _extract_views(root: Path, profile: str = "generic") -> list[dict]:
     views = []
     candidates = []
     bases = (root / "resources" / "views",) if profile == "laravel" else (
-        root / "resources" / "views", root / "src", root / "app", root / "pages", root / "views"
+        root / "resources" / "views", root / "src", root / "app", root / "lib",
+        root / "pages", root / "views"
     )
     for base in bases:
         if base.is_dir():
             candidates.extend(base.rglob("*"))
-    for path in sorted(p for p in candidates if p.suffix in {".php", ".html", ".vue", ".jsx", ".tsx"} or p.name.endswith(".blade.php")):
+    for path in sorted(
+        p for p in candidates
+        if p.suffix.lower() in CLIENT_SOURCE_EXTENSIONS or p.name.endswith(".blade.php")
+    ):
         text = path.read_text(encoding="utf-8", errors="ignore")
-        fields = sorted(set(re.findall(r"\bname=['\"]([^'\"]+)['\"]", text)))
-        route_refs = sorted(set(re.findall(r"route\(['\"]([^'\"]+)['\"]", text) + re.findall(r"\b(?:href|to)=['\"]([^'\"]+)['\"]", text)))
-        buttons = sorted(set(re.findall(r"<button[^>]*>(.*?)</button>", text, re.I | re.S)))
+        fields = set(re.findall(r"\bname=['\"]([^'\"]+)['\"]", text))
+        # Flutter/Dart has no HTML name attributes; retain the useful labels
+        # exposed by TextField/TextFormField and common form widgets.
+        fields.update(re.findall(r"\b(?:labelText|hintText|helperText)\s*:\s*['\"]([^'\"]+)['\"]", text))
+        route_refs = set(
+            re.findall(r"route\(['\"]([^'\"]+)['\"]", text)
+            + re.findall(r"\b(?:href|to)=['\"]([^'\"]+)['\"]", text)
+            + re.findall(r"\b(?:GoRoute|AutoRoute)\(\s*path\s*:\s*['\"]([^'\"]+)['\"]", text)
+            + re.findall(r"\b(?:pushNamed|go|goNamed)\(\s*['\"]([^'\"]+)['\"]", text)
+        )
+        buttons = set(re.findall(r"<button[^>]*>(.*?)</button>", text, re.I | re.S))
+        buttons.update(re.findall(r"\b(?:TextButton|ElevatedButton|OutlinedButton|FilledButton|CupertinoButton)\s*\([^)]*?child\s*:\s*Text\(\s*['\"]([^'\"]+)", text, re.I | re.S))
         clean_buttons = [re.sub(r"<[^>]+>", "", b).strip() for b in buttons if re.sub(r"<[^>]+>", "", b).strip()]
+        fields = sorted(fields)
+        route_refs = sorted(route_refs)
         business_rules = []
         for line in text.splitlines():
             snippet = _business_rule_candidate(line)
@@ -628,10 +656,14 @@ def cmd_extract_app(args: argparse.Namespace) -> int:
     if args.module != "all":
         modules = {k: v for k, v in modules.items() if k == args.module}
 
+    source_files = _repo_files(root)
+    languages = sorted({Path(path).suffix.lower().lstrip(".") for path in source_files if Path(path).suffix.lower() in SOURCE_EXTENSIONS})
     payload = {
         "source_root": str(root),
         "profile": profile,
         "confidence": "static-scan",
+        "languages": languages,
+        "source_file_count": sum(1 for path in source_files if Path(path).suffix.lower() in SOURCE_EXTENSIONS),
         "dependencies": deps,
         "routes": routes,
         "views": views,
@@ -646,6 +678,7 @@ def cmd_extract_app(args: argparse.Namespace) -> int:
         f"Source: {root}",
         f"Profile: {profile}",
         f"Modules: {len(modules)}",
+        f"Languages: {', '.join(languages) or 'not detected'}",
         "Scan mode: static read-only; no database connection was opened.",
     ]))
     _write(out / "discovery" / "tech-stack.md", _lines("Tech Stack", deps["composer"] + deps["npm"]))

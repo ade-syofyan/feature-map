@@ -21,6 +21,13 @@ smoke:
 	printf "router.get('/orders', listOrders);\n" > "$$app/src/orders.ts"; \
 	$(PYTHON) $(CLI) extract-app "$$app" -o "$$extract" --profile auto; \
 	test -f "$$extract/index.json"; \
+	rm -rf "$$app" "$$extract"; \
+	app=$$(mktemp -d); extract=$$(mktemp -d); \
+	mkdir -p "$$app/lib"; \
+	printf 'name: demo_app\n' > "$$app/pubspec.yaml"; \
+	printf "final routes = [GoRoute(path: '/checkout')];\n" > "$$app/lib/routes.dart"; \
+	$(PYTHON) $(CLI) extract-app "$$app" -o "$$extract" --profile auto; \
+	grep -q 'dart' "$$extract/index.json"; \
 	rm -rf "$$app" "$$extract"
 
 install-codex:

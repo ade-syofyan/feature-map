@@ -21,8 +21,25 @@ Expected:
 - `doctor` returns JSON with `"ok": true`.
 - `validate` returns JSON. In this plugin repo it exits 1 with `FEATURE-MAP.yaml not found`, because the plugin repo itself has no map.
 - Temporary `make install-codex` writes `plugin-root.txt` and the installed CLI doctor resolves this checkout.
-- `make smoke` runs `doctor` and a tiny blueprint import without leaving a draft file in the repo.
+- `make smoke` runs `doctor`, a tiny blueprint import, and a non-PHP source extraction without leaving a draft file in the repo.
 - `status` exits 0. In this plugin repo it may show no flows because the repo itself does not need a `FEATURE-MAP.yaml`.
+
+## Multi-language Extraction
+
+```bash
+tmp=$(mktemp -d)
+out=$(mktemp -d)
+printf 'name: demo_app\n' > "$tmp/pubspec.yaml"
+mkdir -p "$tmp/lib"
+printf "final routes = [GoRoute(path: '/checkout')];\n" > "$tmp/lib/routes.dart"
+python3 codex-skill/feature-map/scripts/feature_map_cli.py extract-app "$tmp" -o "$out" --profile auto
+```
+
+Expected:
+
+- Exit 0.
+- `index.json` reports `dart` in `languages` and includes `/checkout` when statically detectable.
+- The scan remains read-only and does not require Flutter or Dart to be installed.
 
 ## Blueprint Import
 

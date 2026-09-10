@@ -111,7 +111,7 @@ Arguments:
 
 - `root`: path to the existing app you want to scan
 - `-o, --output`: output folder for the generated migration pack
-- `--profile`: `auto`, `laravel`, `express`, `nestjs`, `nextjs`, `node`, or `generic`
+- `--profile`: `auto`, `laravel`, `express`, `nestjs`, `nextjs`, `node`, or `generic`; `auto` also scans Flutter/Dart and other supported source languages
 - `--module`: optional module filter; use `all` to write every detected module
 
 Recommended workflow:
@@ -129,7 +129,8 @@ It scans the target app in read-only mode and collects the findings into one fol
 - auth and middleware hints
 - dependency and helper/library clues
 - model, table, migration, cast, and schema summaries
-- client surfaces for web, mobile, desktop, or other new frontends
+- client surfaces for web, mobile, desktop, Flutter/Dart, or other new frontends
+- detected source languages and source-file inventory across Dart, Kotlin, Swift, Rust, Go, Java, C#, Python, Ruby, and other common languages
 - risk notes where static analysis cannot prove the business relation
 
 Output shape:
@@ -392,6 +393,12 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 
 ### Releases
 
+#### v0.12.3 - Multi-language App Extraction
+
+- Adds static extraction support for Flutter/Dart and common client/server languages beyond PHP and JavaScript.
+- Detects Dart/Flutter routes, form labels, and common button widgets when they are statically recognizable.
+- Adds detected language and source-file counts to `extract-app` output and extends smoke/regression coverage.
+
 #### v0.12.2 - Freebuff README Visibility
 
 - Surfaces Freebuff as a supported adapter in the main README badge and availability tables.
@@ -424,7 +431,8 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 #### v0.10.3 - App Migration Extract
 
 - Adds `feature_map_cli.py extract-app` to create a read-only migration pack from an existing app into one output folder.
-- Supports `--profile auto` with Laravel and common Node stack detection, plus generic fallback for non-PHP codebases.
+- Supports `--profile auto` with Laravel and common Node stack detection, plus generic fallback for Flutter/Dart and other non-PHP codebases.
+- Scans client/server source files across common languages instead of silently skipping non-JavaScript projects; Flutter/Dart routes, fields, labels, and button candidates are included when statically detectable.
 - Extracts route inventory, UI forms/actions/filters, dependency hints, model/table touchpoints, schema summaries, API candidates, client surfaces, and risk notes for agent consumption in a rewrite, mobile, desktop, or microservice project.
 - Documents end-to-end App Migration Extractor usage: command arguments, workflow, output tree, prompt examples, limitations, and troubleshooting.
 - Adds `BENCHMARK.md` and `POSITIONING.md` for smoke-proof evidence, adjacent-tool boundaries, and safer product positioning.
@@ -743,6 +751,7 @@ Setelah itu rangkum module apa saja yang ditemukan dan rekomendasikan module man
 Limitasi:
 
 - Static scan tidak bisa membuktikan semua route dinamis, runtime menu, policy permission, atau relasi database.
+- Extractor tetap bersifat heuristik untuk Flutter/Dart dan bahasa lain; widget atau route yang dibangun sepenuhnya secara dinamis mungkin perlu review manual.
 - Extractor belum membuka koneksi database pada MVP ini.
 - Extractor tidak membuat API baru dan tidak rewrite app lama.
 - Output adalah peta awal migrasi; owner domain tetap perlu review rule bisnis yang kritis.
@@ -940,6 +949,12 @@ Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sud
 
 ### Rilis
 
+#### v0.12.3 - Ekstraksi App Multi-bahasa
+
+- Menambahkan dukungan ekstraksi statis untuk Flutter/Dart dan bahasa client/server umum di luar PHP dan JavaScript.
+- Mendeteksi route Dart/Flutter, label form, dan widget tombol umum jika dapat dikenali secara statis.
+- Menambahkan daftar bahasa serta jumlah source file ke output `extract-app`, sekaligus memperluas smoke test dan regression test.
+
 #### v0.12.2 - Visibilitas Freebuff di README
 
 - Menampilkan Freebuff sebagai adapter yang didukung di badge dan tabel ketersediaan README utama.
@@ -972,7 +987,8 @@ Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sud
 #### v0.10.3 - Ekstrak Migrasi App
 
 - Menambahkan `feature_map_cli.py extract-app` untuk membuat migration pack read-only dari app lama ke satu folder output.
-- Mendukung `--profile auto` dengan deteksi Laravel dan stack Node umum, plus fallback generic untuk codebase non-PHP.
+- Mendukung `--profile auto` dengan deteksi Laravel dan stack Node umum, plus fallback generic untuk Flutter/Dart dan codebase non-PHP lainnya.
+- Memindai source file lintas bahasa umum; route, field, label, dan button Flutter/Dart yang bisa dikenali secara statis ikut masuk ke migration pack.
 - Mengekstrak inventory route, form/action/filter UI, hint dependency, touchpoint model/tabel, ringkasan schema, kandidat API, client surface, dan catatan risiko untuk dikonsumsi agent di project rewrite, mobile, desktop, atau microservice.
 - Mendokumentasikan pemakaian App Migration Extractor end-to-end: argumen command, workflow, bentuk output, contoh prompt, limitasi, dan troubleshooting.
 - Menambahkan `BENCHMARK.md` dan `POSITIONING.md` untuk bukti smoke, batas dengan tool adjacent, dan positioning produk yang lebih aman.
