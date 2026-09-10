@@ -14,7 +14,7 @@ It also includes an **App Migration Extractor** for turning a legacy or target a
 read-only migration pack: routes, UI flows, auth hints, data touchpoints, API candidates,
 and schema clues collected into one folder for the next build.
 
-[![Version](https://img.shields.io/badge/version-0.12.2-38bdf8?style=flat-square)](#releases)
+[![Version](https://img.shields.io/badge/version-0.12.3-38bdf8?style=flat-square)](#releases)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8fb8ec?style=flat-square)](#claude-code-usage)
 [![Codex](https://img.shields.io/badge/Codex-skill-8fb8ec?style=flat-square)](#codex-usage)
 [![Freebuff](https://img.shields.io/badge/Freebuff-adapter-10b981?style=flat-square)](#freebuff-usage)
