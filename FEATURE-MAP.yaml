@@ -50,3 +50,21 @@ flows:
         sha: "freebuff-adapter"
         author: "Buffy"
         change: "Menambahkan Freebuff adapter untuk hooks dan commands"
+
+  edition-policy:
+    description: "Batas edisi gratis dan pengumuman Pro berbayar"
+    confidence: reviewed
+    policy: "Semua fitur lama tetap gratis; Pro hanya menambah fitur baru di repo privat"
+    business_aspects:
+      - visibility
+    touchpoints:
+      - path: "README.md"
+        role: docs
+      - path: "PRO.md"
+        role: docs
+      - path: "LICENSE"
+        role: docs
+    invariants:
+      - "Semua fitur yang sudah ada di feature-map tetap gratis dengan lisensi MIT"
+      - "Fitur Pro yang belum dibuat harus disebut sebagai rencana, bukan fitur tersedia"
+      - "Pembelian Pro diarahkan ke ade.syofyan@gmail.com; harga dan ketentuan update dikonfirmasi sebelum pembayaran"
