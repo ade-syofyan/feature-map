@@ -68,3 +68,32 @@ flows:
       - "Semua fitur yang sudah ada di feature-map tetap gratis dengan lisensi MIT"
       - "Fitur Pro yang belum dibuat harus disebut sebagai rencana, bukan fitur tersedia"
       - "Pembelian Pro diarahkan ke ade.syofyan@gmail.com; harga dan ketentuan update dikonfirmasi sebelum pembayaran"
+
+  distribution-privacy:
+    description: "Contoh umum dan lokasi pemasangan yang portabel"
+    confidence: reviewed
+    touchpoints:
+      - path: "codex-skill/feature-map/scripts/feature_map_cli.py"
+        role: backend-service
+      - path: "codex-skill/feature-map/SKILL.md"
+        role: docs
+      - path: "tests/test_feature_map_cli.py"
+        role: backend-validation
+      - path: "tests/test_distribution_policy.py"
+        role: backend-validation
+      - path: "tests/test_fm_registry.py"
+        role: backend-validation
+      - path: "tests/test_hook_multirepo.py"
+        role: backend-validation
+      - path: "tests/test_impact_chain.py"
+        role: backend-validation
+      - path: "BENCHMARK.md"
+        role: docs
+      - path: "SMOKE.md"
+        role: docs
+      - path: "README.md"
+        role: docs
+    invariants:
+      - "Contoh harus sintetis dan mandiri, tanpa nama, path, source atau data aplikasi pelanggan"
+      - "Lokasi default plugin berasal dari lokasi instalasi, bukan komputer pengembang"
+      - "Pengujian harus tetap berjalan tanpa checkout proyek pelanggan"

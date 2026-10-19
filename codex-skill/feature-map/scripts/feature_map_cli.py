@@ -13,9 +13,9 @@ import tempfile
 from pathlib import Path
 
 
-REPO_PLUGIN_ROOT = Path(__file__).resolve().parents[3]
 CODEX_SKILL_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_REPO_ROOT = CODEX_SKILL_ROOT.parent.parent
+REPO_PLUGIN_ROOT = SOURCE_REPO_ROOT
 SUPPORTED_ROLES = {
     "client-form",
     "client-view",

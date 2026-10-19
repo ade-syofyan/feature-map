@@ -511,3 +511,7 @@ def test_extract_app_business_rule_candidates_skip_static_css_and_modal_markup(t
     rules = data["modules"]["orders"]["ui"]["business_rules"]
 
     assert rules == ["{order.status === 'draft' && <button>Approve</button>}"]
+
+
+def test_checkout_fallback_is_derived_from_install_location():
+    assert feature_map_cli.REPO_PLUGIN_ROOT == feature_map_cli.SOURCE_REPO_ROOT
