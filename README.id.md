@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/banner-mobile.svg" />
-  <img src="assets/banner.svg" alt="Feature Map menghubungkan form, API, admin, dan dokumentasi lewat satu registry flow bisnis." width="100%" />
+  <img src="assets/hero.svg" alt="Feature Map menghubungkan form, API, admin, dan dokumentasi lewat satu registry flow bisnis." width="100%" />
 </picture>
 
 # feature-map

@@ -39,3 +39,7 @@ merupakan gambar konsep, bukan tangkapan layar aplikasi.
 - Hindari badge berlebihan, animasi, angka penggunaan rekaan, serta kesan tool ini layanan cloud.
 - Pindahkan detail panjang ke panduan, bukan menghapusnya.
 - Perubahan ini hanya dokumen dan aset, tanpa perubahan perilaku program. Validasi memakai render SVG/README, tautan, registry, dan tes yang sudah ada.
+
+Aset halaman depan memakai `hero.svg`, `banner-mobile.svg`, dan `workflow.svg`.
+Aset lama dipertahankan untuk panduan lengkap; nama baru menghindari gambar
+lama yang masih disimpan cache GitHub pada path gambar sebelumnya.

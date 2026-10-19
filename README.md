@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/banner-mobile.svg" />
-  <img src="assets/banner.svg" alt="Feature Map connects client, API, admin and documentation through one business-flow registry." width="100%" />
+  <img src="assets/hero.svg" alt="Feature Map connects client, API, admin and documentation through one business-flow registry." width="100%" />
 </picture>
 
 # feature-map
@@ -89,7 +89,7 @@ file-change reminders, and pre-commit checks. Its sync workflow still requires m
 
 ## How it works
 
-<img src="assets/how-it-works.svg" alt="Map: declare related files and rules. Edit: inspect affected touchpoints. Review: audit the code and synchronize intentional rule changes." width="100%" />
+<img src="assets/workflow.svg" alt="Map: declare related files and rules. Edit: inspect affected touchpoints. Review: audit the code and synchronize intentional rule changes." width="100%" />
 
 1. **Map** the files that belong to a business flow and record what must stay true.
 2. **Edit** with the related touchpoints in view. Claude hooks provide reminders; Codex follows the skill instructions.
