@@ -15,7 +15,7 @@ Keep related code, business rules, and documentation in view when your agent mak
 [![Tests](https://github.com/ade-syofyan/feature-map/actions/workflows/test.yml/badge.svg)](https://github.com/ade-syofyan/feature-map/actions/workflows/test.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-ffb454?style=flat-square)](LICENSE)
 
-**[Get started](#get-started)** · **[How it works](#how-it-works)** · **[Complete guide](GUIDE.md)** · **[Bahasa Indonesia](README.id.md)**
+**[Get started](#get-started)** · **[How it works](#how-it-works)** · **[Complete guide](GUIDE.md)** · **[Explore Pro](PRO.md)** · **[Bahasa Indonesia](README.id.md)**
 
 Local files · Git-reviewable rules · Claude Code, Codex & Freebuff
 
@@ -40,6 +40,12 @@ map of related files and the rules they must share, plus a workflow to review ch
 | **Plan a migration** | A static, read-only app scan that collects routes, UI, auth, and data clues into a reviewable migration pack. |
 
 All features in this repository are **free and open source under MIT**.
+
+> [!TIP]
+> **Take your change checks further with Feature Map Pro.**
+> Compare branch changes, run reviewed JSON scenarios across runtimes, and retain regression guards.
+> **[Explore Pro features →](PRO.md)** · **[Ask about pricing →](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**
+
 
 ## Get started
 
@@ -164,8 +170,21 @@ or generate a rewritten app. [Checks and limitations →](BENCHMARK.md)
 
 ## Feature Map Pro
 
-**Free stays free.** Pro is a separate paid edition that adds new capabilities.
+**From mapping a flow to checking its behavior.** Pro adds executable checks on top of the Free core.
 Existing Free features remain here under MIT.
+
+| Capability | Free | Pro preview |
+| :--- | :---: | :---: |
+| Flow registry, audits, multi-repo mapping | Included | Included |
+| Document import and app migration extraction | Included | Included |
+| Parallel branch checks | — | Included |
+| Reviewed rule tests and selected mutations | — | Python |
+| Simulation and migration comparison | — | Python / native JSON commands |
+| Incident reproduction and retained bug guards | — | Supported runtimes |
+
+Pro **0.20.0-pro.1** is available as a private CLI preview. Native scenarios use a reviewed project
+command and JSON contract; Node/PHP integration scenarios have been tested. Read [scope and availability](PRO.md)
+before purchase.
 
 For pricing, purchase, and current availability, contact **[ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**.
 [Pro details →](PRO.md) · Features in the private Pro edition are not included in this Free installation.

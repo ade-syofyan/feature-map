@@ -6,13 +6,13 @@
 
 ### Feature Map Pro
 
-**Feature Map Pro is a paid edition in development, maintained in a separate private repository.**
+**Feature Map Pro is a separate paid edition with additional CLI previews.**
 All existing features in this repository remain free and open source under the MIT license.
 Pro adds new capabilities; no existing feature is being removed or moved behind a paywall.
 
 For purchase inquiries, pricing, and current availability, email
 [ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase).
-See [Pro details and planned features](PRO.md#english). Pro features are planned, not available in this free release.
+See [Pro features, preview limits, and purchase](PRO.md#english). Pro capabilities are not included in this Free installation.
 
 `feature-map` helps Claude Code and Codex keep cross-layer business behavior consistent. It maps the files that belong to the same business flow, reminds the agent when one touchpoint changes, and gives you an audit path before silent drift becomes a production bug.
 
@@ -564,13 +564,13 @@ If this idea matches a bug your team has seen before, open an issue, propose a f
 
 ### Feature Map Pro
 
-**Feature Map Pro adalah edisi berbayar yang sedang dikembangkan di repo privat terpisah.**
+**Feature Map Pro adalah edisi berbayar terpisah dengan preview CLI tambahan.**
 Semua fitur yang sudah ada di repo ini tetap gratis dan open source dengan lisensi MIT.
 Pro menambahkan fitur baru; tidak ada fitur lama yang dihapus atau dipindahkan menjadi berbayar.
 
 Untuk pembelian, harga, dan ketersediaan versi Pro, kirim email ke
 [ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro).
-Lihat [rincian Pro dan rencana fitur](PRO.md#bahasa-indonesia). Fitur Pro masih direncanakan dan belum tersedia di rilis gratis ini.
+Lihat [fitur Pro, batas preview, dan pembelian](PRO.md#bahasa-indonesia). Fitur Pro tidak termasuk dalam instalasi Free ini.
 
 `feature-map` membantu Claude Code dan Codex menjaga konsistensi perilaku bisnis lintas layer. Plugin ini memetakan file-file yang berada dalam flow bisnis yang sama, mengingatkan agent saat salah satu touchpoint berubah, dan memberi jalur audit sebelum drift diam-diam menjadi bug production.
 

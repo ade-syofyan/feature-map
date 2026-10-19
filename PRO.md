@@ -4,8 +4,13 @@
 
 ## English
 
-Feature Map Pro is a paid edition being developed in a separate private repository.
-This page announces the product direction; it is not an announcement of a downloadable Pro release.
+**Go from flow context to executable change checks.** Feature Map Pro is a paid edition
+with the Free core and additional checks, maintained in a separate private repository.
+
+Current private preview: **0.20.0-pro.1**. CLI previews and an upgrade ZIP exist;
+a public sales release has not been published. Contact us for current availability and delivery.
+
+**[Ask about pricing and purchase →](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**
 
 ### Free stays free
 
@@ -17,19 +22,29 @@ The public repository and its existing releases remain available.
 Pro is for new capabilities built on top of the free core. The free edition does
 not require Pro, a paid account, or a license server.
 
-### Planned capabilities
+### Preview capabilities
 
-| Capability | Intended outcome | Status |
+| Capability | What you can check | Status |
 | --- | --- | --- |
-| Parallel Change Guard | Identify candidate business-rule conflicts between branches, even when Git reports no textual conflict | Planned |
-| Rules to Tests | Turn reviewed business rules into regression scenarios and check whether tests detect deliberate rule violations in an isolated workspace | Planned |
-| Change Simulation | Compare business outcomes before and after a change using executable scenarios | Planned |
-| Migration Comparison | Compare selected behavior between old and new applications, with explicitly accepted differences | Later |
-| Incident Investigation | Trace a reported symptom to relevant flows and changes, then prepare a reproducible test | Later |
+| Parallel checks | Shared-flow candidates, merge conflicts, and opt-in tests across isolated branch snapshots | CLI preview |
+| Rule tests | Generate tests from reviewed Python cases and check selected source mutations | Python preview |
+| Change simulation | Compare JSON outcomes and selected file effects across two pinned commits | Python / native JSON command preview |
+| Migration comparison | Compare selected behavior between two applications, including different runtimes | Python / native JSON command preview |
+| Incident investigation | Rank relevant changes and reproduce selected output differences | Python / native JSON command preview |
+| Regression guards | Retain a reviewed test with fail/pass/selected-source rollback evidence, then check future commits | Supported runners / JUnit preview |
 
-These are development plans, not guarantees of automatic bug detection or delivery dates.
-A candidate finding is not a verified defect. Executed evidence and unverified
-analysis will be distinguished in reports.
+Native scenarios use a trusted project command and JSON contract. Node/PHP integration
+scenarios have been tested; other runtimes need a compatible wrapper and verification.
+Rule-test generation remains Python. Native commands are not an OS sandbox.
+
+Findings depend on the selected files, scenarios, and review. A candidate is not a proven
+bug; reproduction does not prove root cause. Pro does not automatically understand prose
+rules, generate correct tests for every language, or guarantee detection of every bug.
+
+### One installation
+
+Pro includes the Free core. Upgrade by replacing the installation source with Pro;
+use one active Feature Map installation. Project registries remain with the project.
 
 ### Purchase by email
 
@@ -43,8 +58,13 @@ release date is promised on this page.
 
 ## Bahasa Indonesia
 
-Feature Map Pro adalah edisi berbayar yang sedang dikembangkan di repo privat terpisah.
-Halaman ini menjelaskan arah produk. Rilis Pro belum tersedia untuk diunduh.
+**Dari peta alur ke bukti perubahan yang bisa diuji.** Feature Map Pro adalah edisi berbayar
+yang menyertakan core Free dan pemeriksaan tambahan di repo privat terpisah.
+
+Preview privat saat ini: **0.20.0-pro.1**. Preview CLI dan paket ZIP upgrade sudah ada;
+rilis penjualan publik belum diterbitkan. Hubungi kami untuk ketersediaan dan cara penyerahan.
+
+**[Tanyakan harga dan pembelian →](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**
 
 ### Fitur gratis
 
@@ -56,19 +76,29 @@ Repo publik beserta rilis yang sudah ada tetap tersedia.
 Pro berisi kemampuan baru di atas core gratis. Edisi gratis tidak membutuhkan
 Pro, akun berbayar, atau server lisensi.
 
-### Rencana fitur
+### Fitur preview
 
-| Fitur | Hasil yang dituju | Status |
+| Fitur | Yang bisa diperiksa | Status |
 | --- | --- | --- |
-| Cek Perubahan Paralel | Menemukan kandidat benturan aturan bisnis antar-branch, termasuk saat Git tidak menemukan konflik teks | Direncanakan |
-| Aturan Jadi Tes | Mengubah aturan yang sudah direview menjadi skenario regresi dan mengecek kekuatan tes lewat pelanggaran aturan di lingkungan terisolasi | Direncanakan |
-| Simulasi Perubahan | Membandingkan hasil bisnis sebelum dan sesudah perubahan lewat skenario yang bisa dijalankan | Direncanakan |
-| Cek Migrasi | Membandingkan perilaku tertentu pada aplikasi lama dan baru, beserta perbedaan yang memang disetujui | Tahap berikutnya |
-| Pelacak Insiden | Menghubungkan gejala masalah dengan flow dan perubahan terkait, lalu menyiapkan tes reproduksi | Tahap berikutnya |
+| Cek Perubahan Paralel | Kandidat flow bersama, konflik merge, serta tes opsional pada snapshot branch terpisah | Preview CLI |
+| Aturan Jadi Tes | Tes dari kasus Python yang direview dan pemeriksaan mutasi source terpilih | Preview Python |
+| Simulasi Perubahan | Hasil JSON dan efek file terpilih pada dua commit | Preview Python / command JSON native |
+| Cek Migrasi | Perilaku terpilih pada dua aplikasi, termasuk runtime berbeda | Preview Python / command JSON native |
+| Pelacak Insiden | Perubahan terkait dan reproduksi perbedaan hasil terpilih | Preview Python / command JSON native |
+| Bug Jadi Penjaga | Simpan tes dengan bukti gagal–lulus–gagal pada source terpilih, lalu cek commit berikutnya | Preview runner yang didukung / JUnit |
 
-Daftar ini adalah rencana pengembangan, bukan jaminan semua bug akan terdeteksi
-atau janji tanggal rilis. Kandidat temuan belum tentu bug yang terbukti.
-Laporan akan membedakan hasil yang sudah diuji dan analisis yang belum diverifikasi.
+Skenario native memakai command project tepercaya dan kontrak JSON. Skenario integrasi
+Node/PHP sudah diuji; runtime lain membutuhkan wrapper yang cocok dan pengujian.
+Generator tes aturan masih Python. Command native bukan sandbox OS.
+
+Temuan bergantung pada file, skenario, dan review. Kandidat belum tentu bug yang terbukti;
+reproduksi tidak membuktikan akar masalah. Pro tidak otomatis memahami semua aturan
+berbentuk teks, membuat tes yang benar untuk setiap bahasa, atau menjamin semua bug terdeteksi.
+
+### Satu instalasi
+
+Pro menyertakan core Free. Upgrade dilakukan dengan mengganti sumber instalasi ke Pro;
+gunakan satu instalasi Feature Map aktif. Registry project tetap berada di project.
 
 ### Pembelian via Email
 

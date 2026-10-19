@@ -11,7 +11,7 @@
 
 Bantu agent melihat hubungan kode, aturan bisnis, dan dokumentasi saat membuat perubahan.
 
-**[Mulai pakai](#mulai-pakai)** · **[Cara kerja](#cara-kerja)** · **[Panduan lengkap](GUIDE.md#bahasa-indonesia)** · **[English](README.md)**
+**[Mulai pakai](#mulai-pakai)** · **[Cara kerja](#cara-kerja)** · **[Panduan lengkap](GUIDE.md#bahasa-indonesia)** · **[Lihat Pro](PRO.md#bahasa-indonesia)** · **[English](README.md)**
 
 File lokal · Bisa direview lewat Git · Claude Code, Codex & Freebuff
 
@@ -34,6 +34,12 @@ beserta aturan yang harus tetap konsisten, lalu memakai alur audit untuk memerik
 | **Siapkan migrasi** | Pindai file aplikasi lama tanpa mengubah source, lalu kumpulkan petunjuk route, UI, auth, dan data. |
 
 Seluruh fitur di repo ini **gratis dan open source dengan lisensi MIT**.
+
+> [!TIP]
+> **Periksa perubahan lebih dalam dengan Feature Map Pro.**
+> Bandingkan branch, jalankan skenario JSON lintas runtime, dan simpan tes sebagai penjaga regresi.
+> **[Lihat fitur Pro →](PRO.md#bahasa-indonesia)** · **[Tanyakan harga →](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**
+
 
 ## Mulai pakai
 
@@ -135,8 +141,21 @@ atau otomatis membuat ulang aplikasi. Pemilik project tetap mereview aturan dan 
 
 ## Feature Map Pro
 
-**Free tetap gratis.** Pro merupakan edisi berbayar terpisah dengan fitur tambahan.
-Seluruh fitur Free yang sudah tersedia tetap ada di repo ini dengan lisensi MIT.
+**Lanjutkan dari peta alur ke bukti pengujian.** Pro menambahkan pemeriksaan yang bisa dijalankan
+pada core Free. Seluruh fitur Free tetap tersedia di repo ini dengan lisensi MIT.
+
+| Kemampuan | Free | Preview Pro |
+| :--- | :---: | :---: |
+| Registry, audit, dan pemetaan antar-repo | Ada | Ada |
+| Import dokumen dan ekstraksi aplikasi | Ada | Ada |
+| Cek perubahan antar-branch | — | Ada |
+| Tes aturan dan mutasi terpilih | — | Python |
+| Simulasi dan perbandingan migrasi | — | Python / command JSON native |
+| Reproduksi insiden dan penjaga regresi | — | Runtime yang didukung |
+
+Pro **0.20.0-pro.1** tersedia sebagai preview CLI privat. Skenario native memerlukan command project
+dan kontrak JSON yang direview; skenario integrasi Node/PHP sudah diuji.
+Baca [cakupan fitur](PRO.md#bahasa-indonesia) sebelum membeli.
 
 Untuk harga, pembelian, dan ketersediaan, hubungi **[ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**.
 [Rincian Pro →](PRO.md#bahasa-indonesia) · Fitur edisi Pro tidak termasuk dalam instalasi Free ini.

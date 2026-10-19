@@ -43,3 +43,7 @@ merupakan gambar konsep, bukan tangkapan layar aplikasi.
 Aset halaman depan memakai `hero.svg`, `banner-mobile.svg`, dan `workflow.svg`.
 Aset lama dipertahankan untuk panduan lengkap; nama baru menghindari gambar
 lama yang masih disimpan cache GitHub pada path gambar sebelumnya.
+
+Promosi Pro ada pada navigasi, callout setelah manfaat Free, dan tabel perbandingan
+di akhir README. Pembelian diarahkan ke email; status preview dan cakupan runtime
+dinyatakan sesuai versi privat yang diperiksa, tanpa harga atau janji update rekaan.
