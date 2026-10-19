@@ -60,6 +60,14 @@ flows:
     touchpoints:
       - path: "README.md"
         role: docs
+      - path: "README.id.md"
+        role: docs
+      - path: "GUIDE.md"
+        role: docs
+      - path: "assets/*.svg"
+        role: docs
+      - path: "docs/DESIGN.md"
+        role: docs
       - path: "PRO.md"
         role: docs
       - path: "LICENSE"
