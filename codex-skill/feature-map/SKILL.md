@@ -143,3 +143,12 @@ python3 ~/.codex/skills/feature-map/scripts/feature_map_cli.py mark-clean <repo-
 ```
 
 If there is an unresolved GAP, ask before marking clean.
+
+## Presentation Changes
+
+Pure styling needs no registry update. Review sheet structure, headers, filters,
+visibility and data formats as import/export contracts even when formulas stay
+unchanged. Claude hooks suppress only recognized static styling Edit/MultiEdit
+pairs with complete old/new text; unknown edits remain reviewable. Codex performs
+this classification during review. Existing pending items still require review.
+See `docs/NOTIFICATIONS.md` in the plugin root.

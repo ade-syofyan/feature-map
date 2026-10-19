@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fm_registry
 import fm_state
 import fm_pending
+import fm_changes
 
 
 # Kata kunci bisnis yang sering menandai baris berisi rumus/kalkulasi/aturan
@@ -52,21 +53,18 @@ _BUSINESS_CONDITION_RE = re.compile(
 
 
 def _formula_source_text(tool_name, tool_input):
-    """Ekstrak teks yang baru ditulis/diedit dari tool_input, sesuai tool."""
-    if tool_name == "Edit":
-        return tool_input.get("new_string") or ""
-    if tool_name == "MultiEdit":
-        edits = tool_input.get("edits") or []
-        return "\n".join(e.get("new_string", "") for e in edits if isinstance(e, dict))
-    if tool_name in ("Write", "NotebookEdit"):
-        return tool_input.get("content") or tool_input.get("new_source") or ""
-    return ""
+    """Only changed lines, including removed rules; omit known presentation edits."""
+    if tool_name not in ('Edit', 'MultiEdit', 'Write', 'NotebookEdit'):
+        return ''
+    return fm_changes.changed_text(tool_name, tool_input)
 
 
 def detect_formula_change(tool_name, tool_input):
     """Cari baris yang kelihatan seperti rumus/kalkulasi bisnis di teks yang
     baru ditulis. Return daftar baris (dipangkas) yang cocok, atau []."""
     text = _formula_source_text(tool_name, tool_input)
+    # HTML attributes and closing tags are not arithmetic expressions.
+    text = re.sub(r'</?[A-Za-z][^<>]*>', '', text)
     if not text:
         return []
     hits = []
@@ -431,6 +429,9 @@ def handle(payload):
         if not rel_paths:
             return
 
+    if file_path and fm_changes.presentation_only(payload.get('tool_name') or '', tool_input):
+        return  # Preserve any earlier business drift; this edit adds no new evidence.
+
     stale_hits = match_flows(flows, rel_paths)
     chains = {}
     if stale_hits:
@@ -484,8 +485,7 @@ def handle(payload):
                      "kalau ya, kerjakan atau laporkan gap-nya ke user. Kalau policy berubah, "
                      "update FEATURE-MAP.yaml.")
         if formula_snippets:
-            lines.append("  ⚠ RUMUS/KALKULASI BISNIS terdeteksi berubah di file ini (bukan sekadar "
-                         "reminder generik):")
+            lines.append("  ⚠ RUMUS/KALKULASI BISNIS diduga berubah pada baris edit; periksa dulu:")
             for snip in formula_snippets:
                 lines.append(f"    | {snip}")
             lines.append("  Kalau ini memang formula/threshold/kondisi bisnis (bukan cuma "
@@ -502,7 +502,7 @@ def handle(payload):
                              f"{name}.md berisi narasi lengkap + contoh angka, lalu daftarkan "
                              "sebagai `mechanics_doc` di flow ini (lihat SKILL.md aturan #8).")
         if condition_snippets:
-            lines.append("  ⚠ KONDISI/STATUS/PERMISSION BISNIS terdeteksi berubah di file ini:")
+            lines.append("  ⚠ KONDISI/STATUS/PERMISSION BISNIS diduga berubah; periksa dulu:")
             for snip in condition_snippets:
                 lines.append(f"    | {snip}")
             lines.append("  Kalau ini mengubah eligibility, validasi, visibility UI, status lifecycle, "

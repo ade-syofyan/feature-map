@@ -12,7 +12,7 @@ description: Use when editing files that belong to a cross-layer business flow, 
 1. **Saat reminder hook muncul** (`[feature-map] File yang baru diedit adalah touchpoint ...`): sebelum menganggap task selesai, periksa touchpoint lain yang disebut. Kalau perubahanmu mengubah kontrak/validasi/status yang mereka andalkan, sesuaikan juga atau laporkan gap-nya ke user secara eksplisit.
 2. **Saat policy bisnis berubah** (mis. "KTP jadi wajib"): update field `policy` dan `invariants` di flow terkait di `FEATURE-MAP.yaml` dalam commit yang sama.
    - **Rumus/kalkulasi juga policy.** Kalau perubahanmu menambah/mengubah rumus perhitungan, threshold, atau kondisi bisnis (bukan cuma nama variabel/refactor) — tulis rumus lengkapnya (operand & urutan operasi, bukan cuma nama fungsi) sebagai invariant baru. Ini berlaku bahkan kalau task-nya cuma "audit", "cek", atau "perbaiki bug" — **jangan tunggu user bertanya "apakah ini sudah dicatat?" dulu**, itu berarti sudah kelewat.
-   - Kalau reminder hook menyertakan baris `⚠ RUMUS/KALKULASI BISNIS terdeteksi`, itu heuristik otomatis (bisa false positive) — verifikasi apakah baris yang dicurigai memang rumus bisnis, dan kalau ya langsung tulis invariant-nya sebelum lanjut ke perubahan berikutnya, jangan ditunda sampai akhir sesi.
+   - Kalau reminder hook menyertakan baris `⚠ RUMUS/KALKULASI BISNIS diduga berubah`, itu heuristik otomatis (bisa false positive) — verifikasi apakah baris yang dicurigai memang rumus bisnis, dan kalau ya langsung tulis invariant-nya sebelum lanjut ke perubahan berikutnya, jangan ditunda sampai akhir sesi.
 3. **Saat membuat fitur baru lintas layer**: daftarkan sebagai flow baru di `FEATURE-MAP.yaml` sebelum task dianggap selesai.
 4. **Saat memindah/menghapus file touchpoint**: update path glob-nya di registry.
 5. Audit menyeluruh satu flow: pakai command `/feature-map:flow-audit <nama-flow>`. Setup awal di project baru: `/feature-map:flow-map-init`.
@@ -68,3 +68,12 @@ Glob dicocokkan terhadap path relatif dari root project (fnmatch; `*` juga match
 `last_reviewed` opsional — jejak audit ringkas "siapa pun yang menyentuh flow ini terakhir kali sadar dan menyetujui perubahan aturan bisnisnya". Diisi otomatis oleh `/feature-map:flow-sync-apply` (tanggal + short SHA commit saat itu, kalau tersedia) setiap kali invariant/policy flow tsb disinkronkan — bukan mekanisme approval terpisah, cuma catatan hasil dari approval Edit yang sudah terjadi. Berguna untuk orang baru: kalau field ini basi dibanding riwayat commit touchpoint-nya, berarti ada perubahan yang belum tercatat sadar oleh siapa pun.
 
 `history` opsional — riwayat historis penuh perubahan aturan bisnis flow ini, satu entry per sinkronisasi lewat `/feature-map:flow-sync-apply`: `date`, `sha` (short SHA, atau "uncommitted" kalau belum ada commit), `author` (dari `git config user.name`), dan `change` (ringkasan "dari apa ke apa", bukan cuma "invariant diupdate"). Selalu **append**, jangan pernah menghapus/menimpa entry lama — ini catatan "sebelumnya apa, jadi apa, siapa pelakunya, kapan" untuk siapa pun yang pegang flow ini nanti tanpa harus menelusuri `git log` satu-satu di banyak file touchpoint.
+
+## Batas Reminder
+
+Perubahan tampilan murni tidak perlu sinkronisasi registry. Hook menyaring hanya
+Edit/MultiEdit dengan old/new lengkap yang terbukti cocok dengan daftar gaya
+statis yang dikenal. Input lain tetap diperiksa. Perubahan struktur sheet,
+header, filter, visibilitas, atau format data dapat mengubah kontrak impor/ekspor
+meskipun rumus tetap sama; periksa konsumen sebelum melewati reminder.
+Pending sebelumnya tetap perlu direview. Lihat `docs/NOTIFICATIONS.md`.

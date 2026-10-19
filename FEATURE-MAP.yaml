@@ -5,7 +5,7 @@ flows:
   feature-map-plugin:
     description: "Plugin feature-map untuk tracking flow bisnis lintas layer"
     confidence: reviewed
-    policy: "Setiap perubahan touchpoint harus update FEATURE-MAP.yaml"
+    policy: "Perubahan kontrak atau aturan touchpoint harus disinkronkan; tampilan murni tidak"
     business_aspects:
       - validation
       - status
@@ -97,3 +97,26 @@ flows:
       - "Contoh harus sintetis dan mandiri, tanpa nama, path, source atau data aplikasi pelanggan"
       - "Lokasi default plugin berasal dari lokasi instalasi, bukan komputer pengembang"
       - "Pengujian harus tetap berjalan tanpa checkout proyek pelanggan"
+
+  notification-policy:
+    description: "Reminder sesuai dampak perubahan"
+    confidence: reviewed
+    touchpoints:
+      - path: "hooks/feature_map_hook.py"
+        role: backend-service
+      - path: "hooks/fm_changes.py"
+        role: backend-service
+      - path: "tests/test_cosmetic_changes.py"
+        role: backend-validation
+      - path: "docs/NOTIFICATIONS.md"
+        role: docs
+      - path: "skills/feature-map/SKILL.md"
+        role: docs
+      - path: "codex-skill/feature-map/SKILL.md"
+        role: docs
+    invariants:
+      - "Gaya statis yang dikenali pada Edit/MultiEdit lengkap tidak membuat stale, pending atau reminder baru"
+      - "Data, struktur, filter, visibilitas dan perubahan tidak dikenal tetap direview"
+      - "Konteks rumus yang tetap tidak dihitung sebagai perubahan; kondisi terhapus tetap diperiksa"
+      - "Pending sebelumnya tidak dihapus oleh edit tampilan"
+    mechanics_doc: "docs/NOTIFICATIONS.md"
