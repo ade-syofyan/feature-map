@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/brand/feature-map.png" width="112" alt="Feature Map" /></p>
+
 <div align="center">
 
 <picture>

@@ -128,3 +128,18 @@ flows:
       - "Konteks rumus yang tetap tidak dihitung sebagai perubahan; kondisi terhapus tetap diperiksa"
       - "Pending sebelumnya tidak dihapus oleh edit tampilan"
     mechanics_doc: "docs/NOTIFICATIONS.md"
+
+  product-brand:
+    description: "Logo bersama keluarga Feature Map"
+    confidence: reviewed
+    touchpoints:
+      - path: "assets/brand/feature-map.png"
+        role: docs
+      - path: "README.md"
+        role: docs
+      - path: "docs/BRAND.md"
+        role: docs
+    invariants:
+      - "Logo Alur Terjaga dipakai bersama tanpa mengubah bentuk atau palet"
+      - "Logo bukan bukti lisensi aktif atau hasil pengujian aturan bisnis"
+    mechanics_doc: "docs/BRAND.md"

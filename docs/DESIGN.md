@@ -47,3 +47,9 @@ lama yang masih disimpan cache GitHub pada path gambar sebelumnya.
 Promosi Pro ada pada navigasi, callout setelah manfaat Free, dan tabel perbandingan
 di akhir README. Pembelian diarahkan ke email; status preview dan cakupan runtime
 dinyatakan sesuai versi privat yang diperiksa, tanpa harga atau janji update rekaan.
+
+## Logo Bersama
+
+20 Oktober 2026: logo Alur Terjaga menggantikan simbol lama sebagai identitas produk.
+Aset, makna dan referensi ada di [BRAND.md](BRAND.md). Palet serta layout yang sudah
+ada dipertahankan. Ikon kunci pada tindakan pengelolaan kunci tetap sesuai konteks.
