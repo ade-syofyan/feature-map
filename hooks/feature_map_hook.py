@@ -285,6 +285,13 @@ def parse_feature_map(text):
 
 def unquote(val):
     val = val.strip()
+    if val.startswith('"'):
+        try:
+            decoded = json.loads(val)
+            if isinstance(decoded, str):
+                return decoded
+        except ValueError:
+            pass  # Preserve the existing YAML-subset fallback for non-JSON quoting.
     if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
         val = val[1:-1]
     return val.replace('\\"', '"').replace("\\'", "'").replace("\\\\", "\\")
