@@ -54,6 +54,19 @@ All features in this repository are **free and open source under MIT**.
 Choose your coding agent. Each integration uses the same registry; its reminders and setup differ.
 Python 3 is required for the shared CLI and hooks. Use the guide for optional document-import tools.
 
+### Technical baseline
+
+Free and the Free core bundled with Pro follow the same registry format and agent
+integrations. Core fixes and compatibility improvements are not paid-only features;
+updates move between repositories through review and testing.
+
+Free does not require Node to run its CLI or hooks. The Pro npm installer requires
+Node 18.20.8+; this does not constrain the Node version of a mapped project. Node 18
+projects can be recorded with either edition. Static mapping is separate from test
+execution, which requires the project's own runtime and dependencies. Coding-agent
+requirements are defined by each agent.
+
+
 ### Claude Code Usage
 
 Add the marketplace and install the plugin:

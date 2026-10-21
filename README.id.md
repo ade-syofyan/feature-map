@@ -48,6 +48,19 @@ Seluruh fitur di repo ini **gratis dan open source dengan lisensi MIT**.
 Pilih agent yang digunakan. Semua integrasi memakai registry yang sama, dengan cara setup dan reminder yang berbeda.
 CLI dan hook bersama membutuhkan Python 3.
 
+### Baseline teknis
+
+Free dan core Free dalam Pro mengikuti format registry serta integrasi agent yang
+sama. Perbaikan core dan kompatibilitas tidak dikhususkan untuk edisi berbayar;
+pembaruan diambil antar-repo melalui review dan pengujian.
+
+Feature Map Free tidak memerlukan Node untuk menjalankan CLI dan hook. Pro memakai
+Node 18.20.8+ untuk installer npm; persyaratan ini tidak membatasi versi Node pada
+proyek yang dipetakan. Proyek Node 18 dapat dicatat pada Free maupun Pro.
+Pemeriksaan statis berbeda dari menjalankan tes: tes tetap membutuhkan runtime dan
+dependency proyek yang sesuai. Persyaratan agent mengikuti masing-masing agent.
+
+
 ### Claude Code
 
 Pasang plugin:
