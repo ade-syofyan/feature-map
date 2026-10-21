@@ -13,7 +13,7 @@
 
 Keep related code, business rules, and documentation in view when your agent makes a change.
 
-[![Version](https://img.shields.io/badge/version-0.12.5-8fb8ec?style=flat-square)](GUIDE.md#releases)
+[![Version](https://img.shields.io/badge/version-0.12.6-8fb8ec?style=flat-square)](GUIDE.md#releases)
 [![Tests](https://github.com/ade-syofyan/feature-map/actions/workflows/test.yml/badge.svg)](https://github.com/ade-syofyan/feature-map/actions/workflows/test.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-ffb454?style=flat-square)](LICENSE)
 

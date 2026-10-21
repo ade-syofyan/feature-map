@@ -368,6 +368,14 @@ This is a keyword heuristic, not a verdict — a flagged test may already be cov
 
 ### Releases
 
+#### v0.12.6 - Core Compatibility and Shared Baseline
+
+- Preserves escaped Unicode in the built-in registry parser when PyYAML is unavailable.
+- Suppresses reminders for recognized presentation-only changes without weakening business-rule review.
+- Refreshes shared branding and quick-start documentation.
+- Clarifies the shared Free/Pro technical baseline and separates installer requirements from project runtimes. Free CLI and hooks continue to use Python; mapping Node 18 projects does not require a paid edition.
+- Includes distribution cleanup and documentation updates since v0.12.3. Existing features remain free under MIT.
+
 #### v0.12.3 - Multi-language App Extraction
 
 - Adds static extraction support for Flutter/Dart and common client/server languages beyond PHP and JavaScript.
@@ -927,6 +935,14 @@ python3 ${CLAUDE_PLUGIN_ROOT}/hooks/fm_rules_check.py <repo-root> <flow>
 Ini heuristik kata kunci, bukan vonis final — test yang ditandai bisa saja sudah tercakup invariant yang cuma beda kata. Fungsinya memunculkan kandidat untuk direview manusia, sama seperti `confidence: draft` untuk hasil import blueprint.
 
 ### Rilis
+
+#### v0.12.6 - Kompatibilitas Core
+
+- Mempertahankan escape Unicode pada parser registry bawaan saat PyYAML tidak tersedia.
+- Mengurangi reminder untuk perubahan tampilan yang dikenali, tanpa mengurangi review aturan bisnis.
+- Memperbarui logo bersama dan panduan mulai pakai.
+- Menjelaskan baseline teknis Free/Pro serta perbedaan kebutuhan installer dan runtime proyek. CLI dan hook Free tetap memakai Python; pemetaan proyek Node 18 tidak memerlukan edisi berbayar.
+- Mencakup pembersihan distribusi dan pembaruan dokumentasi sejak v0.12.3. Seluruh fitur lama tetap gratis dengan lisensi MIT.
 
 #### v0.12.3 - Ekstraksi App Multi-bahasa
 
