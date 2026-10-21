@@ -53,3 +53,26 @@ dinyatakan sesuai versi privat yang diperiksa, tanpa harga atau janji update rek
 20 Oktober 2026: logo Alur Terjaga menggantikan simbol lama sebagai identitas produk.
 Aset, makna dan referensi ada di [BRAND.md](BRAND.md). Palet serta layout yang sudah
 ada dipertahankan. Ikon kunci pada tindakan pengelolaan kunci tetap sesuai konteks.
+
+
+## Banner README Bersama
+
+21 Oktober 2026: rancangan banner berslogan disetujui pengguna. Palet, font sistem
+dan logo yang ada dipertahankan; tidak menetapkan arah merek baru. UI UX Pro Max
+dipakai untuk hierarki judul, pemindaian konten dan konsistensi tipografi.
+
+Banner desktop 1200×360 dan mobile 720×400 memakai slogan “Keep business rules
+connected.” Thumbnail PNG yang sama ditanam dalam SVG; ikon tidak direntangkan.
+Label edisi membedakan Free, Pro dan installer. Logo persegi terpisah di atas
+README dihapus. Slogan hadir sebagai alt text; langkah utama tetap berupa teks.
+
+README Free mempertahankan dua bahasa dan melipat detail kompatibilitas. Pro
+menjadi ringkasan kemampuan dengan tautan panduan; petunjuk development dipindah
+ke docs/DEVELOPMENT.md di repo Pro. Installer memakai langkah aktivasi, tabel
+platform dan bantuan pembaruan; detail protokol lisensi tidak dimasukkan.
+
+Validasi: SVG dirender dengan librsvg. Preview Markdown lokal dengan gaya mirip
+GitHub diperiksa pada 1120 px dan 390 px; banner mobile terpilih, gambar termuat
+dan lebar halaman tidak melampaui viewport. Ini bukti preview lokal, bukan klaim
+render produksi GitHub/npm. Tautan relatif dan XML SVG diperiksa. Tidak ada
+perubahan perilaku runtime; tes packaging memastikan kedua banner ikut disalin.

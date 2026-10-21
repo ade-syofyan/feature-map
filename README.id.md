@@ -1,15 +1,11 @@
-<p align="center"><img src="assets/brand/feature-map.png" width="112" alt="Feature Map" /></p>
-
 <div align="center">
 
 <picture>
-  <source media="(max-width: 600px)" srcset="assets/banner-mobile.svg" />
-  <img src="assets/hero.svg" alt="Feature Map menghubungkan form, API, admin, dan dokumentasi lewat satu registry flow bisnis." width="100%" />
+  <source media="(max-width: 600px)" srcset="assets/brand/readme-banner-mobile.svg" />
+  <img src="assets/brand/readme-banner.svg" alt="Feature Map — Keep business rules connected. Free and open source." width="100%" />
 </picture>
 
-# feature-map
-
-### Peta aturan bisnis untuk coding agent.
+# Feature Map
 
 Bantu agent melihat hubungan kode, aturan bisnis, dan dokumentasi saat membuat perubahan.
 
@@ -37,18 +33,13 @@ beserta aturan yang harus tetap konsisten, lalu memakai alur audit untuk memerik
 
 Seluruh fitur di repo ini **gratis dan open source dengan lisensi MIT**.
 
-> [!TIP]
-> **Periksa perubahan lebih dalam dengan Feature Map Pro.**
-> Bandingkan branch, jalankan skenario JSON lintas runtime, dan simpan tes sebagai penjaga regresi.
-> **[Lihat fitur Pro →](PRO.md#bahasa-indonesia)** · **[Tanyakan harga →](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**
-
-
 ## Mulai pakai
 
 Pilih agent yang digunakan. Semua integrasi memakai registry yang sama, dengan cara setup dan reminder yang berbeda.
 CLI dan hook bersama membutuhkan Python 3.
 
-### Baseline teknis
+<details>
+<summary>Runtime dan kompatibilitas</summary>
 
 Free dan core Free dalam Pro mengikuti format registry serta integrasi agent yang
 sama. Perbaikan core dan kompatibilitas tidak dikhususkan untuk edisi berbayar;
@@ -60,6 +51,7 @@ proyek yang dipetakan. Proyek Node 18 dapat dicatat pada Free maupun Pro.
 Pemeriksaan statis berbeda dari menjalankan tes: tes tetap membutuhkan runtime dan
 dependency proyek yang sesuai. Persyaratan agent mengikuti masing-masing agent.
 
+</details>
 
 ### Claude Code
 
@@ -168,9 +160,7 @@ pada core Free. Seluruh fitur Free tetap tersedia di repo ini dengan lisensi MIT
 | Simulasi dan perbandingan migrasi | — | Python / command JSON native |
 | Reproduksi insiden dan penjaga regresi | — | Runtime yang didukung |
 
-Pro **0.20.0-pro.1** tersedia sebagai preview CLI privat. Skenario native memerlukan command project
-dan kontrak JSON yang direview; skenario integrasi Node/PHP sudah diuji.
-Baca [cakupan fitur](PRO.md#bahasa-indonesia) sebelum membeli.
+Pro tersedia melalui [installer publik](https://github.com/ade-syofyan/feature-map-installer). Fitur premium memerlukan aktivasi. Skenario native memakai command project dan kontrak JSON yang direview; baca [cakupan fitur](PRO.md#bahasa-indonesia) sebelum membeli.
 
 Untuk harga, pembelian, dan ketersediaan, hubungi **[ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**.
 [Rincian Pro →](PRO.md#bahasa-indonesia) · Fitur edisi Pro tidak termasuk dalam instalasi Free ini.

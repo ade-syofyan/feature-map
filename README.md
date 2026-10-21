@@ -1,15 +1,11 @@
-<p align="center"><img src="assets/brand/feature-map.png" width="112" alt="Feature Map" /></p>
-
 <div align="center">
 
 <picture>
-  <source media="(max-width: 600px)" srcset="assets/banner-mobile.svg" />
-  <img src="assets/hero.svg" alt="Feature Map connects client, API, admin and documentation through one business-flow registry." width="100%" />
+  <source media="(max-width: 600px)" srcset="assets/brand/readme-banner-mobile.svg" />
+  <img src="assets/brand/readme-banner.svg" alt="Feature Map — Keep business rules connected. Free and open source." width="100%" />
 </picture>
 
-# feature-map
-
-### Business-flow memory for AI coding agents.
+# Feature Map
 
 Keep related code, business rules, and documentation in view when your agent makes a change.
 
@@ -43,18 +39,13 @@ map of related files and the rules they must share, plus a workflow to review ch
 
 All features in this repository are **free and open source under MIT**.
 
-> [!TIP]
-> **Take your change checks further with Feature Map Pro.**
-> Compare branch changes, run reviewed JSON scenarios across runtimes, and retain regression guards.
-> **[Explore Pro features →](PRO.md)** · **[Ask about pricing →](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**
-
-
 ## Get started
 
 Choose your coding agent. Each integration uses the same registry; its reminders and setup differ.
 Python 3 is required for the shared CLI and hooks. Use the guide for optional document-import tools.
 
-### Technical baseline
+<details>
+<summary>Runtime and compatibility</summary>
 
 Free and the Free core bundled with Pro follow the same registry format and agent
 integrations. Core fixes and compatibility improvements are not paid-only features;
@@ -66,6 +57,7 @@ projects can be recorded with either edition. Static mapping is separate from te
 execution, which requires the project's own runtime and dependencies. Coding-agent
 requirements are defined by each agent.
 
+</details>
 
 ### Claude Code Usage
 
@@ -197,9 +189,7 @@ Existing Free features remain here under MIT.
 | Simulation and migration comparison | — | Python / native JSON commands |
 | Incident reproduction and retained bug guards | — | Supported runtimes |
 
-Pro **0.20.0-pro.1** is available as a private CLI preview. Native scenarios use a reviewed project
-command and JSON contract; Node/PHP integration scenarios have been tested. Read [scope and availability](PRO.md)
-before purchase.
+Pro is distributed through the [public installer](https://github.com/ade-syofyan/feature-map-installer). Premium features require activation. Native scenarios use a reviewed project command and JSON contract; read [scope and availability](PRO.md) before purchase.
 
 For pricing, purchase, and current availability, contact **[ade.syofyan@gmail.com](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**.
 [Pro details →](PRO.md) · Features in the private Pro edition are not included in this Free installation.

@@ -7,8 +7,7 @@
 **Go from flow context to executable change checks.** Feature Map Pro is a paid edition
 with the Free core and additional checks, maintained in a separate private repository.
 
-Current private preview: **0.20.0-pro.1**. CLI previews and an upgrade ZIP exist;
-a public sales release has not been published. Contact us for current availability and delivery.
+Pro is available through the [public installer](https://github.com/ade-syofyan/feature-map-installer). Premium features require activation. Contact us for pricing and current availability.
 
 **[Ask about pricing and purchase →](mailto:ade.syofyan@gmail.com?subject=Feature%20Map%20Pro%20purchase)**
 
@@ -61,8 +60,7 @@ release date is promised on this page.
 **Dari peta alur ke bukti perubahan yang bisa diuji.** Feature Map Pro adalah edisi berbayar
 yang menyertakan core Free dan pemeriksaan tambahan di repo privat terpisah.
 
-Preview privat saat ini: **0.20.0-pro.1**. Preview CLI dan paket ZIP upgrade sudah ada;
-rilis penjualan publik belum diterbitkan. Hubungi kami untuk ketersediaan dan cara penyerahan.
+Pro tersedia melalui [installer publik](https://github.com/ade-syofyan/feature-map-installer). Fitur premium memerlukan aktivasi. Hubungi kami untuk harga dan ketersediaan.
 
 **[Tanyakan harga dan pembelian →](mailto:ade.syofyan@gmail.com?subject=Pembelian%20Feature%20Map%20Pro)**
 
